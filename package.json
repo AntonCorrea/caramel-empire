@@ -1,0 +1,12 @@
+{
+  "name": "caramel-empire",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A caramel-themed incremental game",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "scripts": {
+    "dev": "http-server . -p 3000 -c-1"
+  }
+}
