@@ -97,70 +97,67 @@ function toggleSound() {
 const INGREDIENTS = [
   { id: 'coffee', name: 'Coffee', icon: '\u2615', color: '#6a3a1e' },
   { id: 'sugar', name: 'Sugar', icon: '\uD83C\uDF5A', color: '#e8d8b8' },
-  { id: 'milk', name: 'Milk', icon: '\uD83E\uDD5B', color: '#f0ece4', minRating: 0.15 },
-  { id: 'cream', name: 'Cream', icon: '\uD83C\uDF66', color: '#fdf2e3', minRating: 0.25 },
-  { id: 'choco', name: 'Choco', icon: '\uD83C\uDF6B', color: '#4a2810', minRating: 0.40 },
-  { id: 'syrup', name: 'Syrup', icon: '\uD83C\uDF41', color: '#c87840', minRating: 0.55 },
-  { id: 'cinnamon', name: 'Cinnamon', icon: '\uD83C\uDF3F', color: '#a06030', minRating: 0.70 },
-  { id: 'vanilla', name: 'Vanilla', icon: '\uD83C\uDF3C', color: '#f0e0c0', minRating: 0.85 },
+  { id: 'milk', name: 'Milk', icon: '\uD83E\uDD5B', color: '#f0ece4', minRating: 0.25 },
+  { id: 'cream', name: 'Cream', icon: '\uD83C\uDF66', color: '#fdf2e3', minRating: 0.40 },
+  { id: 'choco', name: 'Choco', icon: '\uD83C\uDF6B', color: '#4a2810', minRating: 0.55 },
+  { id: 'syrup', name: 'Syrup', icon: '\uD83C\uDF41', color: '#c87840', minRating: 0.70 },
+  { id: 'cinnamon', name: 'Cinnamon', icon: '\uD83C\uDF3F', color: '#a06030', minRating: 0.80 },
+  { id: 'vanilla', name: 'Vanilla', icon: '\uD83C\uDF3C', color: '#f0e0c0', minRating: 0.90 },
   { id: 'honey', name: 'Honey', icon: '\uD83C\uDF6F', color: '#e0a020', minRating: 0.95 },
 ];
 
 const ORDER_TEMPLATES = [
-  { name: 'Black Coffee',     ings: { coffee: 1 },                  time: 20 },
-  { name: 'Espresso',         ings: { coffee: 2, sugar: 1 },        time: 18 },
-  { name: 'Latte',            ings: { coffee: 1, milk: 1 },         time: 20 },
-  { name: 'Cappuccino',       ings: { coffee: 1, milk: 1, cream: 1 },  time: 22 },
-  { name: 'Mocha',            ings: { coffee: 1, milk: 1, choco: 1 },  time: 22 },
-  { name: 'Macchiato',        ings: { coffee: 2, milk: 1 },         time: 18 },
-  { name: 'Affogato',         ings: { coffee: 1, cream: 1, choco: 1 },  time: 20 },
-  { name: 'Irish Coffee',     ings: { coffee: 1, sugar: 1, cream: 1 },  time: 20 },
-  { name: 'Cold Brew',        ings: { coffee: 1, milk: 1, sugar: 1 },   time: 18 },
-  { name: 'Americano',        ings: { coffee: 2 },                  time: 16 },
-  { name: 'Flat White',       ings: { coffee: 1, milk: 2 },         time: 18 },
-  { name: 'Con Panna',        ings: { coffee: 1, cream: 2 },        time: 16 },
-  { name: 'Ristretto',        ings: { coffee: 1 },                  time: 14 },
-  { name: 'Cortado',          ings: { coffee: 1, milk: 1 },         time: 16 },
-  { name: 'Red Eye',          ings: { coffee: 2 },                  time: 14 },
-  { name: 'Vienna',           ings: { coffee: 1, cream: 2 },        time: 18 },
-  { name: 'Frapp\u00e9',     ings: { coffee: 1, milk: 1, cream: 1 },  time: 20 },
-  { name: 'Latte Macchiato',  ings: { coffee: 1, milk: 2 },         time: 18 },
-  { name: 'Caf\u00e9 au Lait', ings: { coffee: 1, milk: 1, sugar: 1 },  time: 18 },
-  { name: 'Caf\u00e9 Bomb\u00f3n', ings: { coffee: 1, milk: 1, choco: 1, sugar: 1 }, time: 22 },
-  { name: 'Egg Coffee',       ings: { coffee: 1, milk: 1, sugar: 1, cream: 1 }, time: 22 },
-  { name: 'Galao',            ings: { coffee: 1, milk: 2, sugar: 1 },    time: 18 },
-  { name: 'Maple Latte',      ings: { coffee: 1, milk: 1, syrup: 1 },       time: 20, minRating: 0.25 },
-  { name: 'Syrup Americano',  ings: { coffee: 2, syrup: 1 },                time: 16, minRating: 0.25 },
-  { name: 'Cinnamon Cappuccino', ings: { coffee: 1, milk: 1, cinnamon: 1, cream: 1 }, time: 22, minRating: 0.50 },
-  { name: 'Cinnamon Mocha',   ings: { coffee: 1, choco: 1, cinnamon: 1, milk: 1 }, time: 22, minRating: 0.50 },
-  { name: 'Vanilla Dream',    ings: { coffee: 1, milk: 1, vanilla: 1, sugar: 1 },  time: 20, minRating: 0.75 },
-  { name: 'Vanilla Macchiato', ings: { coffee: 2, milk: 1, vanilla: 1 },             time: 20, minRating: 0.75 },
-  { name: 'Honey Bliss',      ings: { coffee: 1, milk: 1, honey: 1, cream: 1 },     time: 22, minRating: 0.90 },
-  { name: 'Spiced Honey',     ings: { coffee: 1, cinnamon: 1, honey: 1 },            time: 18, minRating: 0.90 },
+  { name: 'Black Coffee',     ings: { coffee: 1 },                  time: 16 },
+  { name: 'Espresso',         ings: { coffee: 2, sugar: 1 },        time: 14 },
+  { name: 'Latte',            ings: { coffee: 1, milk: 1 },         time: 16 },
+  { name: 'Cappuccino',       ings: { coffee: 1, milk: 1, cream: 1 },  time: 18 },
+  { name: 'Mocha',            ings: { coffee: 1, milk: 1, choco: 1 },  time: 18 },
+  { name: 'Macchiato',        ings: { coffee: 2, milk: 1 },         time: 14 },
+  { name: 'Affogato',         ings: { coffee: 1, cream: 1, choco: 1 },  time: 16 },
+  { name: 'Irish Coffee',     ings: { coffee: 1, sugar: 1, cream: 1 },  time: 16 },
+  { name: 'Cold Brew',        ings: { coffee: 1, milk: 1, sugar: 1 },   time: 14 },
+  { name: 'Americano',        ings: { coffee: 2 },                  time: 13 },
+  { name: 'Flat White',       ings: { coffee: 1, milk: 2 },         time: 14 },
+  { name: 'Con Panna',        ings: { coffee: 1, cream: 2 },        time: 13 },
+  { name: 'Ristretto',        ings: { coffee: 1 },                  time: 11 },
+  { name: 'Cortado',          ings: { coffee: 1, milk: 1 },         time: 13 },
+  { name: 'Red Eye',          ings: { coffee: 2 },                  time: 11 },
+  { name: 'Vienna',           ings: { coffee: 1, cream: 2 },        time: 14 },
+  { name: 'Frapp\u00e9',     ings: { coffee: 1, milk: 1, cream: 1 },  time: 16 },
+  { name: 'Latte Macchiato',  ings: { coffee: 1, milk: 2 },         time: 14 },
+  { name: 'Caf\u00e9 au Lait', ings: { coffee: 1, milk: 1, sugar: 1 },  time: 14 },
+  { name: 'Caf\u00e9 Bomb\u00f3n', ings: { coffee: 1, milk: 1, choco: 1, sugar: 1 }, time: 18 },
+  { name: 'Egg Coffee',       ings: { coffee: 1, milk: 1, sugar: 1, cream: 1 }, time: 18 },
+  { name: 'Galao',            ings: { coffee: 1, milk: 2, sugar: 1 },    time: 14 },
+  { name: 'Maple Latte',      ings: { coffee: 1, milk: 1, syrup: 1 },       time: 16, minRating: 0.70 },
+  { name: 'Syrup Americano',  ings: { coffee: 2, syrup: 1 },                time: 13, minRating: 0.70 },
+  { name: 'Cinnamon Cappuccino', ings: { coffee: 1, milk: 1, cinnamon: 1, cream: 1 }, time: 18, minRating: 0.80 },
+  { name: 'Cinnamon Mocha',   ings: { coffee: 1, choco: 1, cinnamon: 1, milk: 1 }, time: 18, minRating: 0.80 },
+  { name: 'Vanilla Dream',    ings: { coffee: 1, milk: 1, vanilla: 1, sugar: 1 },  time: 16, minRating: 0.90 },
+  { name: 'Vanilla Macchiato', ings: { coffee: 2, milk: 1, vanilla: 1 },             time: 16, minRating: 0.90 },
+  { name: 'Honey Bliss',      ings: { coffee: 1, milk: 1, honey: 1, cream: 1 },     time: 18, minRating: 0.95 },
+  { name: 'Spiced Honey',     ings: { coffee: 1, cinnamon: 1, honey: 1 },            time: 14, minRating: 0.95 },
 ];
 
 /* ============================
    CONVEYOR SETUP
    ============================ */
 
-const VISIBLE = 5;
+const VISIBLE = 2;
 const DESIGNS = [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }];
 
-const DIAG_X = 74;
-const DIAG_Y = 41;
-const BASE_X = 265;
-const BASE_Y = 155;
-const SCALE_NORMAL = 0.75;
-const SCALE_ACTIVE = 1.0;
+const CUP_CENTER_X = 220;
+const CUP_CENTER_Y = 140;
+const CUP_OFFSCREEN_X = -120;
 
 let cups = [];
-let clickPower = 1;
+let money = 0;
 let served = 0;
 let missed = 0;
 let missStreak = 0;
 let totalStars = 1;
 let maxStars = 10;
-let activeIdx = 2;
+let activeIdx = 0;
 let queue = [];
 let busy = false;
 let paused = false;
@@ -171,19 +168,17 @@ function pushHint(msg) {
   if (!log) return;
   var entry = document.createElement('div');
   entry.className = 'hint-entry';
-  entry.textContent = msg;
+  entry.innerHTML = msg;
   log.appendChild(entry);
   log.scrollTop = log.scrollHeight;
-  while (log.children.length > 8) {
+  while (log.children.length > 3) {
     log.removeChild(log.firstChild);
   }
   // entries persist
 }
 const servedDisplay = document.getElementById('servedDisplay');
 const ratingDisplay = document.getElementById('ratingDisplay');
-const clickDisplay = document.getElementById('clickDisplay');
-const beltStripes = document.getElementById('beltStripes');
-const beltSurface = document.getElementById('beltSurface');
+
 const orderName = document.getElementById('orderName');
 const timerArc = document.getElementById('timerArc');
 const timerText = document.getElementById('timerText');
@@ -211,41 +206,42 @@ function getRating() {
 function generateOrder(rating) {
   const template = randOrder(rating);
   const efficiency = Math.min(1, rating);
-  const timeMult = Math.max(0.4, 1.0 - efficiency * 0.5);
+  const timeMult = Math.max(0.3, 1.0 - efficiency * 0.7);
   const time = Math.max(5, Math.round(template.time * timeMult));
   const ings = {};
   for (const [id, count] of Object.entries(template.ings)) {
     ings[id] = count;
   }
-  const bonus = Math.floor(efficiency * 3);
+  var bonusCap = 3 + (state.upgrades['counter'] ? 1 : 0);
+  const bonus = Math.floor(efficiency * bonusCap);
   for (let i = 0; i < bonus; i++) {
     const keys = Object.keys(ings);
     const pick = keys[Math.floor(Math.random() * keys.length)];
     ings[pick] = (ings[pick] || 0) + 1;
   }
-  return { name: template.name, ings: ings, time: time };
+  var decorTime = 0;
+  if (state.upgrades['plant']) decorTime += 2;
+  if (state.upgrades['window']) decorTime += 3;
+  if (state.upgrades['lighting']) decorTime += 2;
+  if (state.upgrades['music']) decorTime += 4;
+  if (state.upgrades['layout']) decorTime *= 2;
+  return { name: template.name, ings: ings, time: time + decorTime };
 }
 
-function applyEspressoShot(a) {
+function applyAutoFill(a) {
   if (!a || a.full) return;
-  var level = state.upgrades['shot'] || 0;
-  if (level === 0) return;
-  var count = level;
-  for (var s = 0; s < count; s++) {
-    var missing = [];
-    for (var _i = 0; _i < INGREDIENTS.length; _i++) {
-      var ing = INGREDIENTS[_i];
-      var need = a.order.ings[ing.id] || 0;
-      if (need > 0 && (a.added[ing.id] || 0) < need) missing.push(ing.id);
-    }
-    if (missing.length === 0) break;
-    var pick = missing[Math.floor(Math.random() * missing.length)];
-    a.added[pick] = Math.min((a.added[pick] || 0) + 1, a.order.ings[pick] || 0);
+  if (!state.upgrades['barista']) return;
+  var missing = [];
+  for (var _i = 0; _i < INGREDIENTS.length; _i++) {
+    var ing = INGREDIENTS[_i];
+    var need = a.order.ings[ing.id] || 0;
+    if (need > 0 && (a.added[ing.id] || 0) < need) missing.push(ing.id);
   }
-  if (level > 0) {
-    updateCupFill(a);
-    updateOrderUI();
-  }
+  if (missing.length === 0) return;
+  var pick = missing[Math.floor(Math.random() * missing.length)];
+  a.added[pick] = Math.min((a.added[pick] || 0) + 1, a.order.ings[pick] || 0);
+  updateCupFill(a);
+  updateOrderUI();
 }
 
 function getStarThresholds(rating) {
@@ -257,24 +253,8 @@ function getStarThresholds(rating) {
   };
 }
 
-function activateTimeWarp() {
-  var a = cups[activeIdx];
-  if (!a || a.full || a.timeWarpUsed || a.timeWarpActive) return;
-  a.timeWarpUsed = true;
-  a.timeWarpActive = true;
-  a.timeWarpCountdown = 5;
-  pushHint('\u23F3 Time Warp activated! 5s freeze.');
-  var btn = document.getElementById('timeWarpBtn');
-  if (btn) btn.disabled = true;
-  setTimeout(function () {
-    if (a) a.timeWarpActive = false;
-    if (btn) btn.style.display = 'none';
-  }, 5000);
-}
-
 function cupPos(index) {
-  const offset = index - 2;
-  return { x: BASE_X + offset * DIAG_X, y: BASE_Y - offset * DIAG_Y };
+  return { x: index === 0 ? CUP_CENTER_X : CUP_OFFSCREEN_X, y: CUP_CENTER_Y };
 }
 
 function makeCup(design) {
@@ -300,18 +280,13 @@ function spawn() {
   const el = makeCup(d);
   const added = {};
   for (const ing of INGREDIENTS) added[ing.id] = 0;
-  const bonus = computeTimeBonus();
-  const total = order.time + bonus;
+  const total = order.time;
   return {
     el, design: d,
     order: order,
     added: added,
     full: false,
     ruined: false,
-    safetyUsed: false,
-    timeWarpUsed: false,
-    timeWarpActive: false,
-    timeWarpCountdown: 0,
     timer: total,
     totalTime: total,
     fillEl: el.querySelector('.cup-fill'),
@@ -334,17 +309,12 @@ function reposition(animate) {
   cups.forEach(function (c, i) {
     const pos = cupPos(i);
     const el = c.el;
-    const scale = i === activeIdx ? SCALE_ACTIVE : SCALE_NORMAL;
-    el.style.left = (pos.x - 22) + 'px';
-    el.style.top = (pos.y - 25) + 'px';
-    el.style.transform = 'scale(' + scale + ')';
-    el.style.transformOrigin = 'center bottom';
-    el.style.transition = animate ? 'all 0.45s cubic-bezier(0.34, 1.4, 0.64, 1)' : 'none';
+    el.style.left = (pos.x - 28) + 'px';
+    el.style.top = (pos.y - 32) + 'px';
+    el.style.transition = animate ? 'all 0.5s cubic-bezier(0.34, 1.4, 0.64, 1)' : 'none';
     el.className = 'cup-wrap d-' + c.design.id;
     el.classList.toggle('active', i === activeIdx);
-    el.classList.toggle('next', i === activeIdx + 1 || i === activeIdx + 2);
     el.style.zIndex = 4 + i;
-    el.querySelector('.cup-inner').classList.toggle('no-pulse', i !== activeIdx);
   });
   updateBadges();
 }
@@ -358,7 +328,7 @@ function initCups() {
     row.appendChild(c.el);
     cups.push(c);
   }
-  activeIdx = 2;
+  activeIdx = 0;
   reposition(false);
   updateOrderUI();
 }
@@ -395,18 +365,15 @@ function updateOrderUI() {
     return;
   }
 
-  orderName.textContent = a.order.name;
-  updateTimerArc(a);
-
-  // Time Warp button
-  var warpBtn = document.getElementById('timeWarpBtn');
-  var warpLevel = state.upgrades['warp'] || 0;
-  if (warpLevel > 0 && !a.timeWarpUsed && !a.full && a.timer > 0) {
-    warpBtn.style.display = '';
-    warpBtn.disabled = false;
-  } else {
-    warpBtn.style.display = 'none';
+  var totalIngs = 0;
+  for (var _i in a.order.ings) totalIngs += a.order.ings[_i];
+  var baseTime = 0;
+  for (var _t = 0; _t < ORDER_TEMPLATES.length; _t++) {
+    if (ORDER_TEMPLATES[_t].name === a.order.name) { baseTime = ORDER_TEMPLATES[_t].time; break; }
   }
+  var baseCost = Math.floor(totalIngs * (baseTime / 8));
+  orderName.textContent = a.order.name + ' ($' + baseCost + ')';
+  updateTimerArc(a);
 
   // Checklist
   orderChecklist.innerHTML = '';
@@ -450,13 +417,6 @@ function addIngredient(ingId) {
 
   const need = a.order.ings[ingId] || 0;
   if (need === 0) {
-    var netLevel = state.upgrades['net'] || 0;
-    if (netLevel > 0 && !a.safetyUsed) {
-      a.safetyUsed = true;
-      playError();
-      pushHint('\uD83D\uDEE1\uFE0F Safety net used! Wrong ingredient blocked.');
-      return;
-    }
     const rect = a.el.querySelector('.cup-inner').getBoundingClientRect();
     for (let i = 0; i < 6; i++) {
       const p = document.createElement('div');
@@ -479,13 +439,10 @@ function addIngredient(ingId) {
       a.steam.classList.remove('active');
       a.full = false;
       a.ruined = false;
-      a.safetyUsed = false;
-      a.timeWarpUsed = false;
-      a.timeWarpActive = false;
-      a.timeWarpCountdown = 0;
       updateOrderUI();
       updateBadges();
-      pushHint('\u2615 Complete the order!');
+      var orderName = a.order.name;
+      pushHint('\u2615 New Order: ' + orderName + '!');
     }, 600);
     return;
   }
@@ -495,39 +452,38 @@ function addIngredient(ingId) {
     return;
   }
 
-  const power = Math.min(computeClickPower() || 1, need - (a.added[ingId] || 0));
+  var power = 1;
+  if (state.upgrades['milkfrother'] && (ingId === 'milk' || ingId === 'cream')) power += 1;
+  if (state.upgrades['syrups'] && (ingId === 'syrup' || ingId === 'cinnamon' || ingId === 'vanilla' || ingId === 'honey')) power += 1;
+  power = Math.min(power, need - (a.added[ingId] || 0));
   a.added[ingId] = (a.added[ingId] || 0) + power;
   playPop();
 
   // Steam on cup
   a.steam.classList.add('active');
 
+  // Cup flash
+  var cupInner = a.el.querySelector('.cup-inner');
+  cupInner.classList.add('ing-flash');
+
   // Particles
-  const rect = a.el.querySelector('.cup-inner').getBoundingClientRect();
+  const rect = cupInner.getBoundingClientRect();
   const cx = rect.left + rect.width * 0.5;
   const cy = rect.top + rect.height * 0.4;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 8; i++) {
     const p = document.createElement('div');
     p.className = 'pop';
     const ing = INGREDIENTS.find(function (x) { return x.id === ingId; });
     p.style.background = ing ? ing.color : '#fff';
-    p.style.left = (cx + (Math.random() - 0.5) * 20) + 'px';
-    p.style.top = (cy + (Math.random() - 0.5) * 10) + 'px';
-    p.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
-    p.style.setProperty('--dy', (Math.random() * -40 - 10) + 'px');
+    p.style.width = (4 + Math.random() * 6) + 'px';
+    p.style.height = p.style.width;
+    p.style.left = (cx + (Math.random() - 0.5) * 40) + 'px';
+    p.style.top = (cy + (Math.random() - 0.5) * 20) + 'px';
+    p.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+    p.style.setProperty('--dy', (Math.random() * -60 - 10) + 'px');
     document.body.appendChild(p);
     setTimeout(function (pp) { pp.remove(); }, 500);
   }
-
-  // Burst text
-  const ingName = INGREDIENTS.find(function (x) { return x.id === ingId; }).name;
-  const b = document.createElement('div');
-  b.className = 'burst';
-  b.textContent = '+' + ingName;
-  b.style.left = (cx - 20) + 'px';
-  b.style.top = (cy - 10) + 'px';
-  document.body.appendChild(b);
-  setTimeout(function () { b.remove(); }, 600);
 
   // Update fill %
   updateCupFill(a);
@@ -540,25 +496,47 @@ function addIngredient(ingId) {
     servedDisplay.textContent = served;
     const ratio = a.totalTime > 0 ? a.timer / a.totalTime : 0;
     const thresholds = getStarThresholds(getRating());
-    var goldenLevel = state.upgrades['golden'] || 0;
-    var effectiveFive = thresholds.five - goldenLevel * 0.06;
-    var effectiveFour = thresholds.four - goldenLevel * 0.05;
-    var effectiveThree = thresholds.three - goldenLevel * 0.04;
-    var effectiveTwo = thresholds.two - goldenLevel * 0.03;
+    var invOffset = state.upgrades['inventory'] ? 0.06 : 0;
+    var effectiveFive = thresholds.five - invOffset;
+    var effectiveFour = thresholds.four - invOffset;
+    var effectiveThree = thresholds.three - invOffset;
+    var effectiveTwo = thresholds.two - invOffset;
     let stars = 0;
     if (ratio >= effectiveFive) stars = 5;
     else if (ratio >= effectiveFour) stars = 4;
     else if (ratio >= effectiveThree) stars = 3;
     else if (ratio >= effectiveTwo) stars = 2;
     else if (ratio > 0) stars = 1;
-    var doubleLevel = state.upgrades['double'] || 0;
-    var multiplier = 1 + doubleLevel;
-    totalStars += stars * multiplier;
-    maxStars += 5 * multiplier;
+    totalStars += stars;
+    maxStars += 5;
     missStreak = 0;
+
+    var totalIngs = 0;
+    for (var _ii in a.order.ings) totalIngs += a.order.ings[_ii];
+    var baseTime = 0;
+    for (var _t = 0; _t < ORDER_TEMPLATES.length; _t++) {
+      if (ORDER_TEMPLATES[_t].name === a.order.name) { baseTime = ORDER_TEMPLATES[_t].time; break; }
+    }
+    var starMoney = [0, 0.5, 0.8, 1.1, 1.4, 1.8];
+    var moneyEarned = Math.floor(totalIngs * (baseTime / 8) * starMoney[stars]);
+    if (state.upgrades['wallart']) moneyEarned = Math.floor(moneyEarned * 1.15);
+    if (state.upgrades['outdoor']) moneyEarned = Math.floor(moneyEarned * 1.20);
+    if (state.upgrades['beans']) moneyEarned = Math.floor(moneyEarned * 1.5);
+    if (state.upgrades['lighting']) moneyEarned = Math.floor(moneyEarned * (1 + 0.1 * stars));
+    money += moneyEarned;
+    document.getElementById('moneyDisplay').textContent = '$' + money;
+    document.getElementById('shopMoneyDisplay').textContent = '$' + money;
+    renderUpgrades();
+
+    var baseCost = Math.floor(totalIngs * (baseTime / 8));
+    var tip = moneyEarned - baseCost;
     updateRating();
     showFloatingStars(stars, '', a.el);
-    pushHint('\u2705 ' + stars + '\u2605 Order complete!');
+    showFloatingMoney(baseCost, a.el);
+    if (tip > 0) showFloatingTip(tip, a.el);
+    var hintTxt = '\u2705 ' + stars + '\u2605 +$' + baseCost;
+    if (tip > 0) hintTxt += ' + <span style="color:#e67e22">tip $' +  tip + '</span>';
+    pushHint(hintTxt);
     playComplete();
 
     // Full particles
@@ -577,7 +555,11 @@ function addIngredient(ingId) {
       setTimeout(function (pp) { pp.remove(); }, 500);
     }
 
-    setTimeout(advance, 450);
+    if (state.upgrades['supervisor']) {
+      advance();
+    } else {
+      setTimeout(advance, 450);
+    }
   }
 }
 
@@ -585,25 +567,70 @@ function showFloatingStars(stars, text, cupEl) {
   if (!cupEl) return;
   var rect = cupEl.getBoundingClientRect();
   var cx = rect.left + rect.width / 2;
-  var cy = rect.top + rect.height / 2;
+  var cy = rect.top;
+  var wrap = document.createElement('div');
+  wrap.className = 'float-arc';
   var el = document.createElement('div');
-  el.className = 'float-stars';
-  var starStr = '';
-  for (var i = 0; i < 5; i++) {
-    starStr += i < stars ? '\u2605' : '\u2606';
-  }
-  var label = '';
-  if (stars === 5) label = 'Incredible!';
-  else if (stars === 4) label = 'Amazing!';
-  else if (stars === 3) label = 'Perfect!';
-  else if (stars === 2) label = 'Great!';
-  else if (stars === 1) label = 'Good!';
-  else label = 'Miss!';
-  el.innerHTML = '<div class="float-stars-text">' + label + '</div><div class="float-stars-stars">' + starStr + '</div>';
-  el.style.left = (cx - 50) + 'px';
-  el.style.top = (cy - 20) + 'px';
-  document.body.appendChild(el);
-  setTimeout(function () { el.remove(); }, 1400);
+  el.className = 'float-star-inner';
+  var s = '';
+  for (var i = 0; i < stars; i++) s += '\u2605';
+  el.textContent = s;
+  var spread = (Math.random() - 0.5) * 0.8;
+  var finalX = Math.sin(spread) * (80 + Math.random() * 40);
+  var finalY = -(40 + Math.random() * 40);
+  wrap.style.setProperty('--dx', finalX + 'px');
+  el.style.setProperty('--dy', finalY + 'px');
+  wrap.style.left = (cx - 30) + 'px';
+  wrap.style.top = (cy - 12) + 'px';
+  wrap.appendChild(el);
+  document.body.appendChild(wrap);
+  setTimeout(makeRemover(wrap), 1200);
+}
+
+function makeRemover(el) {
+  return function () { el.remove(); };
+}
+
+function showFloatingMoney(amount, cupEl) {
+  if (!cupEl) return;
+  var rect = cupEl.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2;
+  var cy = rect.top;
+  var wrap = document.createElement('div');
+  wrap.className = 'float-arc';
+  var el = document.createElement('div');
+  el.className = 'float-money-inner';
+  el.textContent = '+$' + amount;
+  var finalX = 70 + Math.random() * 60;
+  var finalY = -(30 + Math.random() * 40);
+  wrap.style.setProperty('--dx', finalX + 'px');
+  el.style.setProperty('--dy', finalY + 'px');
+  wrap.style.left = (cx - 20) + 'px';
+  wrap.style.top = (cy - 10) + 'px';
+  wrap.appendChild(el);
+  document.body.appendChild(wrap);
+  setTimeout(makeRemover(wrap), 1200);
+}
+
+function showFloatingTip(amount, cupEl) {
+  if (!cupEl) return;
+  var rect = cupEl.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2;
+  var cy = rect.top;
+  var wrap = document.createElement('div');
+  wrap.className = 'float-arc';
+  var el = document.createElement('div');
+  el.className = 'float-tip-inner';
+  el.textContent = 'Tip $' + amount + '!';
+  var finalX = -(70 + Math.random() * 60);
+  var finalY = -(30 + Math.random() * 40);
+  wrap.style.setProperty('--dx', finalX + 'px');
+  el.style.setProperty('--dy', finalY + 'px');
+  wrap.style.left = (cx - 40) + 'px';
+  wrap.style.top = (cy - 20) + 'px';
+  wrap.appendChild(el);
+  document.body.appendChild(wrap);
+  setTimeout(makeRemover(wrap), 1200);
 }
 
 function updateCupFill(a) {
@@ -638,16 +665,7 @@ function updateTimer(dt) {
   if (!a || a.full) return;
   if (a.timer <= 0) return;
 
-  if (a.timeWarpActive) {
-    a.timeWarpCountdown -= dt;
-    if (a.timeWarpCountdown <= 0) {
-      a.timeWarpActive = false;
-      a.timeWarpCountdown = 0;
-    }
-    return;
-  }
-  var masterLevel = state.upgrades['master'] || 0;
-  var slowdown = 1 - masterLevel * 0.25;
+  var slowdown = state.upgrades['brewer'] ? 0.75 : 1;
   a.timer -= dt * Math.max(0.1, slowdown);
   updateOrderUI();
 
@@ -658,7 +676,7 @@ function updateTimer(dt) {
     missStreak++;
     document.getElementById('missedDisplay').textContent = missed;
     totalStars += 0;
-    var missPenalty = 5 + Math.floor(missStreak * 2);
+    var missPenalty = 5 + Math.max(0, Math.floor(missStreak * 2) - (state.upgrades['cashier'] ? 2 : 0));
     maxStars += missPenalty;
     updateRating();
     updateOrderUI();
@@ -693,65 +711,34 @@ function advance() {
   if (!a || !a.full) return;
   busy = true;
 
-  beltStripes.classList.remove('scroll');
-  void beltStripes.offsetWidth;
-  beltStripes.classList.add('scroll');
-
-  beltSurface.classList.remove('pulse');
-  void beltSurface.offsetWidth;
-  beltSurface.classList.add('pulse');
-
-  const rect = a.el.querySelector('.cup-inner').getBoundingClientRect();
-  for (let i = 0; i < 4; i++) {
-    const p = document.createElement('div');
-    p.className = 'pop';
-    p.style.background = ['#d09050','#e0a060','#f0c860'][i % 3];
-    const cx = rect.left + rect.width * 0.5;
-    const cy = rect.top + rect.height * 0.4;
-    p.style.left = (cx - 4) + 'px';
-    p.style.top = (cy - 4) + 'px';
-    p.style.setProperty('--dx', (Math.random() * 50 - 25) + 'px');
-    p.style.setProperty('--dy', (Math.random() * -50 - 10) + 'px');
-    document.body.appendChild(p);
-    setTimeout(function (pp) { pp.remove(); }, 500);
-  }
+  a.el.querySelector('.cup-inner').style.animation = 'none';
+  void a.el.offsetWidth;
+  a.el.classList.add('exiting');
 
   setTimeout(function () {
-    a.el.style.transition = 'none';
-    a.el.style.transform = 'scale(' + SCALE_NORMAL + ')';
-    a.el.querySelector('.cup-inner').style.animation = 'none';
-    void a.el.offsetWidth;
-    a.el.classList.add('exiting');
+    const removed = cups.shift();
+    removed.el.remove();
+
+    let next = queue.shift();
+    if (!next) next = spawn();
+    cups.push(next);
+    row.appendChild(next.el);
+
+    const newEl = next.el;
+    newEl.style.transition = 'none';
+    newEl.querySelector('.cup-inner').style.animation = 'none';
+    void newEl.offsetWidth;
+    reposition(true);
+    newEl.classList.add('entering');
 
     setTimeout(function () {
-      const removed = cups.shift();
-      removed.el.remove();
-
-      let next = queue.shift();
-      if (!next) next = spawn();
-      cups.push(next);
-      row.appendChild(next.el);
-
-      const newEl = next.el;
-      newEl.style.transition = 'none';
-      newEl.querySelector('.cup-inner').style.animation = 'none';
-      void newEl.offsetWidth;
-      reposition(true);
-      newEl.classList.add('entering');
-
-      beltStripes.classList.remove('scroll-fast');
-      void beltStripes.offsetWidth;
-      beltStripes.classList.add('scroll-fast');
-
-      setTimeout(function () {
-        newEl.classList.remove('entering');
-        busy = false;
-        updateOrderUI();
-        applyEspressoShot(cups[activeIdx]);
-        pushHint('\u2615 Complete the order!');
-      }, 450);
-    }, 350);
-  }, 300);
+      newEl.classList.remove('entering');
+      busy = false;
+      updateOrderUI();
+      applyAutoFill(cups[activeIdx]);
+      pushHint('\u2615 New Order: ' + cups[activeIdx].order.name + '!');
+    }, 500);
+  }, 400);
 }
 
 /* ============================
@@ -762,20 +749,39 @@ const state = {
   upgrades: {},
 };
 
-const UPGRADES = [
-  { id: 'grinder', name: 'Sharp Grinder', desc: 'More per tap', icon: '\u26A1', baseCost: 10, clickBonus: 1 },
-  { id: 'quick', name: 'Quick Hands', desc: '+3s per order', icon: '\u23F1\uFE0F', baseCost: 30, timeBonus: 3 },
-  { id: 'shot', name: 'Espresso Shot', desc: 'Auto-fill 1 ingredient', icon: '\uD83D\uDCA8', baseCost: 80 },
-  { id: 'golden', name: 'Golden Timer', desc: 'Easier high-star rating', icon: '\uD83C\uDF1F', baseCost: 150 },
-  { id: 'net', name: 'Safety Net', desc: '1 free mistake per order', icon: '\uD83D\uDEE1\uFE0F', baseCost: 300 },
-  { id: 'warp', name: 'Time Warp', desc: 'Freeze timer 5s once/order', icon: '\u23F3', baseCost: 500 },
-  { id: 'double', name: 'Double Stars', desc: '\u00d72 stars earned', icon: '\u2B50', baseCost: 800 },
-  { id: 'master', name: 'Master Blend', desc: 'Timer 25% slower', icon: '\uD83C\uDFAF', baseCost: 1500 },
+const UPGRADE_CATEGORIES = [
+  {
+    name: '\uD83C\uDFF0 Decor',
+    upgrades: [
+      { id: 'plant', name: 'Potted Plant', desc: '+2s per order', icon: '\uD83C\uDF3F', cost: 30 },
+      { id: 'wallart', name: 'Wall Art', desc: '+15% money per order', icon: '\uD83D\uDDBC\uFE0F', cost: 80 },
+      { id: 'counter', name: 'New Counter', desc: '+1 bonus ingredient capacity', icon: '\uD83E\uDE9A', cost: 180 },
+      { id: 'window', name: 'Window Display', desc: '+3s per order', icon: '\uD83C\uDFE1', cost: 400 },
+      { id: 'lighting', name: 'Ambient Lighting', desc: '+2s, star money bonus', icon: '\uD83D\uDCA1', cost: 800 },
+      { id: 'outdoor', name: 'Outdoor Seating', desc: '+20% money per order', icon: '\uD83C\uDFD5\uFE0F', cost: 1600 },
+      { id: 'music', name: 'Music System', desc: '+4s per order', icon: '\uD83C\uDFB5', cost: 3200 },
+      { id: 'layout', name: 'Premium Layout', desc: '2\u00d7 all decor time bonuses', icon: '\u2728', cost: 6500 },
+    ]
+  },
+  {
+    name: '\uD83D\uDC77 Employees',
+    upgrades: [
+      { id: 'barista', name: 'Part-time Barista', desc: 'Auto-fill 1 ingredient per order', icon: '\uD83D\uDC68\u200D\uD83C\uDF73', cost: 12000 },
+      { id: 'cashier', name: 'Cashier', desc: 'Reduce miss streak penalty by 2', icon: '\uD83D\uDCCB', cost: 24000 },
+      { id: 'inventory', name: 'Inventory Manager', desc: 'Loosen star thresholds', icon: '\uD83D\uDCCA', cost: 48000 },
+      { id: 'supervisor', name: 'Shift Supervisor', desc: 'Auto-advance on order complete', icon: '\uD83C\uDFC6', cost: 96000 },
+    ]
+  },
+  {
+    name: '\u2699\uFE0F Equipment',
+    upgrades: [
+      { id: 'beans', name: 'Premium Beans', desc: '1.5\u00d7 money per order', icon: '\uD83C\uDF4E', cost: 180000 },
+      { id: 'milkfrother', name: 'Milk Frother', desc: '+1 tap for milk & cream', icon: '\uD83E\uDD5B', cost: 350000 },
+      { id: 'syrups', name: 'Syrup Dispenser', desc: '+1 tap for syrup/spices', icon: '\uD83C\uDF41', cost: 700000 },
+      { id: 'brewer', name: 'Master Brewer', desc: 'Timer 25% slower', icon: '\uD83C\uDFAF', cost: 1400000 },
+    ]
+  }
 ];
-
-const CONFIG = {
-  costMultiplier: 1.15,
-};
 
 /* ============================
    DOM REFS
@@ -834,29 +840,6 @@ function renderParticles() {
    GAME LOGIC
    ============================ */
 
-function computeCost(upgrade) {
-  const level = state.upgrades[upgrade.id] || 0;
-  return Math.floor(upgrade.baseCost * Math.pow(CONFIG.costMultiplier, level));
-}
-
-function computeClickPower() {
-  let power = 0;
-  for (const u of UPGRADES) {
-    const level = state.upgrades[u.id] || 0;
-    power += (u.clickBonus || 0) * level;
-  }
-  return power || 1;
-}
-
-function computeTimeBonus() {
-  let bonus = 0;
-  for (const u of UPGRADES) {
-    const level = state.upgrades[u.id] || 0;
-    bonus += (u.timeBonus || 0) * level;
-  }
-  return bonus;
-}
-
 /* ============================
    UI
    ============================ */
@@ -885,10 +868,6 @@ function regenerateLockedOrders(locked) {
     if (cups.indexOf(cup) === activeIdx) {
       cup.timer = Math.max(5, cup.timer);
       cup.full = false;
-      cup.safetyUsed = false;
-      cup.timeWarpUsed = false;
-      cup.timeWarpActive = false;
-      cup.timeWarpCountdown = 0;
     }
   }
   updateOrderUI();
@@ -927,9 +906,12 @@ function renderIngredientButtons() {
   }
 
   if (locked.length > 0) {
-    bar.classList.remove('lock-pulse');
-    void bar.offsetWidth;
-    bar.classList.add('lock-pulse');
+    var gp = document.getElementById('gamePanel');
+    if (gp) {
+      gp.classList.remove('lock-pulse');
+      void gp.offsetWidth;
+      gp.classList.add('lock-pulse');
+    }
     regenerateLockedOrders(locked);
   }
 
@@ -937,66 +919,61 @@ function renderIngredientButtons() {
 }
 
 function updateUI() {
-  clickDisplay.textContent = computeClickPower();
   renderIngredientButtons();
 }
 
 function renderUpgrades() {
   upgradesEl.innerHTML = '';
-  for (const upgrade of UPGRADES) {
-    const level = state.upgrades[upgrade.id] || 0;
-    const cost = computeCost(upgrade);
-    const canAfford = served >= cost;
-    const card = document.createElement('div');
-    card.className = 'upgrade-card' + (canAfford ? ' affordable' : '') + (level === 0 && !canAfford ? ' locked' : '');
-    card.dataset.id = upgrade.id;
-    var bonus = '';
-    if (upgrade.clickBonus) bonus = '+' + upgrade.clickBonus + ' per tap';
-    else if (upgrade.timeBonus) bonus = '+' + upgrade.timeBonus + 's';
-    var showBonus = bonus ? ' (' + bonus + ')' : '';
-    card.innerHTML =
-      '<span class="upgrade-icon">' + upgrade.icon + '</span>' +
-      '<div class="upgrade-info">' +
-        '<div class="upgrade-name">' + upgrade.name + '</div>' +
-        '<div class="upgrade-desc">' + upgrade.desc + showBonus + '</div>' +
-      '</div>' +
-      '<div class="upgrade-right">' +
-        '<div class="upgrade-level">Lv ' + level + '</div>' +
-        '<div class="upgrade-cost">' + Math.floor(cost) + '\u2615</div>' +
-      '</div>';
-    card.addEventListener('click', function () { buyUpgrade(upgrade.id); });
-    upgradesEl.appendChild(card);
+  for (var c = 0; c < UPGRADE_CATEGORIES.length; c++) {
+    var cat = UPGRADE_CATEGORIES[c];
+    var heading = document.createElement('div');
+    heading.className = 'upgrade-category-heading';
+    heading.textContent = cat.name;
+    upgradesEl.appendChild(heading);
+
+    for (var i = 0; i < cat.upgrades.length; i++) {
+      var upg = cat.upgrades[i];
+      var owned = !!state.upgrades[upg.id];
+      var canAfford = money >= upg.cost;
+      var card = document.createElement('div');
+      card.className = 'upgrade-card';
+      if (owned) {
+        card.classList.add('owned');
+      } else if (canAfford) {
+        card.classList.add('affordable');
+        card.addEventListener('click', function (id, cost) { return function () { buyUpgrade(id, cost); }; }(upg.id, upg.cost));
+      } else {
+        card.classList.add('locked');
+      }
+      var costStr = owned ? '\u2713' : '$' + Math.floor(upg.cost);
+      card.innerHTML =
+        '<span class="upgrade-icon">' + upg.icon + '</span>' +
+        '<div class="upgrade-info">' +
+          '<div class="upgrade-name">' + upg.name + '</div>' +
+          '<div class="upgrade-desc">' + upg.desc + '</div>' +
+        '</div>' +
+        '<div class="upgrade-cost">' + costStr + '</div>';
+      upgradesEl.appendChild(card);
+    }
   }
 }
 
-function buyUpgrade(id) {
+function buyUpgrade(id, cost) {
   initAudio();
-  const upgrade = UPGRADES.find(function (u) { return u.id === id; });
-  if (!upgrade) return;
-  const cost = computeCost(upgrade);
-  if (served < cost) {
+  if (money < cost || state.upgrades[id]) {
     playError();
-    const card = document.querySelector('.upgrade-card[data-id="' + id + '"]');
-    if (card) {
-      card.classList.add('shake');
-      setTimeout(function () { if (card) card.classList.remove('shake'); }, 300);
-    }
     return;
   }
-  served -= cost;
-  state.upgrades[id] = (state.upgrades[id] || 0) + 1;
-  servedDisplay.textContent = served;
+  money -= cost;
+  state.upgrades[id] = true;
+  document.getElementById('moneyDisplay').textContent = '$' + money;
+  document.getElementById('shopMoneyDisplay').textContent = '$' + money;
   playDing();
-  const shop = document.getElementById('shop');
+  var shop = document.getElementById('shop');
   shop.classList.add('flash');
   setTimeout(function () { shop.classList.remove('flash'); }, 400);
   renderUpgrades();
   updateUI();
-  const card = document.querySelector('.upgrade-card[data-id="' + id + '"]');
-  if (card) {
-    card.classList.add('bought');
-    setTimeout(function () { if (card) card.classList.remove('bought'); }, 300);
-  }
 }
 
 /* ============================
@@ -1007,6 +984,7 @@ function saveGame() {
   const data = {
     served: served,
     missed: missed,
+    money: money,
     totalStars: totalStars,
     maxStars: maxStars,
     upgrades: state.upgrades,
@@ -1021,6 +999,7 @@ function loadGame() {
       const data = JSON.parse(saved);
       served = data.served || 0;
       missed = data.missed || 0;
+      money = data.money || 0;
       totalStars = data.totalStars !== undefined ? data.totalStars : 1;
       maxStars = data.maxStars !== undefined ? data.maxStars : 10;
       state.upgrades = data.upgrades || {};
@@ -1040,6 +1019,7 @@ function resetGame() {
     served = 0;
     missed = 0;
     missStreak = 0;
+    money = 0;
     totalStars = 1;
     maxStars = 10;
     state.upgrades = {};
@@ -1048,6 +1028,8 @@ function resetGame() {
     updateUI();
     servedDisplay.textContent = '0';
     document.getElementById('missedDisplay').textContent = '0';
+    document.getElementById('moneyDisplay').textContent = '$0';
+    document.getElementById('shopMoneyDisplay').textContent = '$0';
     updateRating();
     orderName.textContent = '\u2014';
     timerText.textContent = '\u2014';
@@ -1094,6 +1076,8 @@ function init() {
   updateUI();
   servedDisplay.textContent = served;
   document.getElementById('missedDisplay').textContent = missed;
+  document.getElementById('moneyDisplay').textContent = '$' + money;
+  document.getElementById('shopMoneyDisplay').textContent = '$' + money;
   updateRating();
   pushHint('\u2615 Coffee Conveyor \u2014 Complete orders to earn stars!');
   document.getElementById('pauseBtn').addEventListener('click', togglePause);
@@ -1114,4 +1098,4 @@ document.getElementById('ingredientBar').addEventListener('click', function (e) 
   if (btn) addIngredient(btn.dataset.ing);
 });
 
-document.getElementById('timeWarpBtn').addEventListener('click', activateTimeWarp);
+

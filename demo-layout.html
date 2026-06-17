@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layout Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --coffee-light: #c09070;
+    --cream: #f5ede4;
+    --cream-dark: #e8dcc8;
+    --bg-start: #1a0e08;
+    --bg-end: #2a1a10;
+    --card-bg: rgba(40, 25, 15, 0.85);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --shadow: rgba(0, 0, 0, 0.3);
+    --radius: 14px;
+    --radius-sm: 8px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  body {
+    font-family: var(--font);
+    background: linear-gradient(170deg, var(--bg-start), var(--bg-end));
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    color: var(--cream-dark);
+  }
+  #app {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Current separate panels */
+  .old-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .old-layout > div {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 2px 12px var(--shadow);
+    padding: 12px;
+  }
+  .scene-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: var(--coffee-light);
+  }
+  .scene-placeholder span {
+    background: rgba(0,0,0,0.3);
+    padding: 4px 12px;
+    border-radius: 8px;
+  }
+  .hint-mock {
+    font-size: 0.72rem;
+    color: #b09070;
+    min-height: 20px;
+  }
+  .order-mock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-mock h3 {
+    font-size: 1rem;
+    color: var(--cream);
+  }
+  .order-mock .tags {
+    display: flex;
+    gap: 6px;
+  }
+  .order-mock .tag {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    color: var(--coffee-light);
+  }
+  .ing-mock {
+    display: flex;
+    gap: 6px;
+  }
+  .ing-mock .btn {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(200,144,80,0.15);
+    border-radius: 14px;
+    padding: 12px 4px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--cream);
+    font-weight: 700;
+  }
+
+  /* New combined panel */
+  .new-layout-title {
+    margin-top: 10px;
+    margin-bottom: 8px;
+    color: var(--coffee-light);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  #gamePanel {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 2px 12px var(--shadow);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #gamePanel .scene-placeholder {
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  #gamePanel .hint-mock {
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 6px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  #gamePanel .order-mock {
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  #gamePanel .ing-mock {
+    background: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .section-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.2);
+    margin-bottom: 2px;
+  }
+</style>
+</head>
+<body>
+  <div id="app">
+    <h1 style="font-size:1.1rem;color:var(--cream);text-align:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)">☕ Coffee Conveyor — Layout Demo</h1>
+
+    <!-- OLD: separate panels -->
+    <div style="color:var(--coffee-light);font-size:0.75rem;font-weight:700;margin-top:8px">⬇ CURRENT (separate panels)</div>
+    <div class="old-layout">
+      <div class="scene-placeholder"><span>🎮 Play Area (conveyor + cups)</span></div>
+      <div class="hint-mock">⏱️ Time's up! (-5★) Streak: 1</div>
+      <div class="order-mock">
+        <h3>☕ Cappuccino</h3>
+        <div class="tags">
+          <span class="tag">☕ 1/1</span>
+          <span class="tag">🥛 0/1</span>
+          <span class="tag">🍦 0/1</span>
+        </div>
+      </div>
+      <div class="ing-mock">
+        <div class="btn">☕ Coffee</div>
+        <div class="btn">🍚 Sugar</div>
+        <div class="btn">🥛 Milk</div>
+        <div class="btn">🍦 Cream</div>
+      </div>
+    </div>
+
+    <!-- NEW: single panel -->
+    <div class="new-layout-title">⬇ PROPOSED (single combined panel)</div>
+    <div id="gamePanel">
+      <div class="scene-placeholder"><span>🎮 Play Area (conveyor + cups)</span></div>
+      <div class="hint-mock">⏱️ Time's up! (-5★) Streak: 1</div>
+      <div class="order-mock">
+        <h3>☕ Cappuccino</h3>
+        <div class="tags">
+          <span class="tag">☕ 1/1</span>
+          <span class="tag">🥛 0/1</span>
+          <span class="tag">🍦 0/1</span>
+        </div>
+      </div>
+      <div class="ing-mock">
+        <div class="btn">☕ Coffee</div>
+        <div class="btn">🍚 Sugar</div>
+        <div class="btn">🥛 Milk</div>
+        <div class="btn">🍦 Cream</div>
+      </div>
+    </div>
+
+    <div style="color:var(--coffee-light);font-size:0.7rem;margin-top:8px;text-align:center;opacity:0.5">
+      Scene, hint log, order panel, and ingredient bar — all nested in one card. Inner elements lose their own background/panel styles.
+    </div>
+  </div>
+</body>
+</html>
