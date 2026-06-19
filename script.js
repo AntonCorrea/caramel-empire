@@ -99,11 +99,11 @@ const INGREDIENTS = [
   { id: 'sugar', name: 'Sugar', icon: '\uD83C\uDF5A', color: '#e8d8b8' },
   { id: 'milk', name: 'Milk', icon: '\uD83E\uDD5B', color: '#f0ece4', minRating: 0.25 },
   { id: 'cream', name: 'Cream', icon: '\uD83C\uDF66', color: '#fdf2e3', minRating: 0.40 },
-  { id: 'choco', name: 'Choco', icon: '\uD83C\uDF6B', color: '#4a2810', minRating: 0.55 },
-  { id: 'syrup', name: 'Syrup', icon: '\uD83C\uDF41', color: '#c87840', minRating: 0.70 },
-  { id: 'cinnamon', name: 'Cinnamon', icon: '\uD83C\uDF3F', color: '#a06030', minRating: 0.80 },
-  { id: 'vanilla', name: 'Vanilla', icon: '\uD83C\uDF3C', color: '#f0e0c0', minRating: 0.90 },
-  { id: 'honey', name: 'Honey', icon: '\uD83C\uDF6F', color: '#e0a020', minRating: 0.95 },
+  { id: 'choco', name: 'Choco', icon: '\uD83C\uDF6B', color: '#4a2810', minRating: 0.45 },
+  { id: 'syrup', name: 'Syrup', icon: '\uD83C\uDF41', color: '#c87840', minRating: 0.50 },
+  { id: 'cinnamon', name: 'Cinnamon', icon: '\uD83C\uDF3F', color: '#a06030', minRating: 0.55 },
+  { id: 'vanilla', name: 'Vanilla', icon: '\uD83C\uDF3C', color: '#f0e0c0', minRating: 0.60 },
+  { id: 'honey', name: 'Honey', icon: '\uD83C\uDF6F', color: '#e0a020', minRating: 0.65 },
 ];
 
 const ORDER_TEMPLATES = [
@@ -129,14 +129,14 @@ const ORDER_TEMPLATES = [
   { name: 'Caf\u00e9 Bomb\u00f3n', ings: { coffee: 1, milk: 1, choco: 1, sugar: 1 }, time: 18 },
   { name: 'Egg Coffee',       ings: { coffee: 1, milk: 1, sugar: 1, cream: 1 }, time: 18 },
   { name: 'Galao',            ings: { coffee: 1, milk: 2, sugar: 1 },    time: 14 },
-  { name: 'Maple Latte',      ings: { coffee: 1, milk: 1, syrup: 1 },       time: 16, minRating: 0.70 },
-  { name: 'Syrup Americano',  ings: { coffee: 2, syrup: 1 },                time: 13, minRating: 0.70 },
-  { name: 'Cinnamon Cappuccino', ings: { coffee: 1, milk: 1, cinnamon: 1, cream: 1 }, time: 18, minRating: 0.80 },
-  { name: 'Cinnamon Mocha',   ings: { coffee: 1, choco: 1, cinnamon: 1, milk: 1 }, time: 18, minRating: 0.80 },
-  { name: 'Vanilla Dream',    ings: { coffee: 1, milk: 1, vanilla: 1, sugar: 1 },  time: 16, minRating: 0.90 },
-  { name: 'Vanilla Macchiato', ings: { coffee: 2, milk: 1, vanilla: 1 },             time: 16, minRating: 0.90 },
-  { name: 'Honey Bliss',      ings: { coffee: 1, milk: 1, honey: 1, cream: 1 },     time: 18, minRating: 0.95 },
-  { name: 'Spiced Honey',     ings: { coffee: 1, cinnamon: 1, honey: 1 },            time: 14, minRating: 0.95 },
+  { name: 'Maple Latte',      ings: { coffee: 1, milk: 1, syrup: 1 },       time: 16, minRating: 0.50 },
+  { name: 'Syrup Americano',  ings: { coffee: 2, syrup: 1 },                time: 13, minRating: 0.50 },
+  { name: 'Cinnamon Cappuccino', ings: { coffee: 1, milk: 1, cinnamon: 1, cream: 1 }, time: 18, minRating: 0.55 },
+  { name: 'Cinnamon Mocha',   ings: { coffee: 1, choco: 1, cinnamon: 1, milk: 1 }, time: 18, minRating: 0.55 },
+  { name: 'Vanilla Dream',    ings: { coffee: 1, milk: 1, vanilla: 1, sugar: 1 },  time: 16, minRating: 0.60 },
+  { name: 'Vanilla Macchiato', ings: { coffee: 2, milk: 1, vanilla: 1 },             time: 16, minRating: 0.60 },
+  { name: 'Honey Bliss',      ings: { coffee: 1, milk: 1, honey: 1, cream: 1 },     time: 18, minRating: 0.65 },
+  { name: 'Spiced Honey',     ings: { coffee: 1, cinnamon: 1, honey: 1 },            time: 14, minRating: 0.65 },
 ];
 
 /* ============================
@@ -146,19 +146,17 @@ const ORDER_TEMPLATES = [
 const VISIBLE = 2;
 const DESIGNS = [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }];
 
-const CUP_CENTER_X = 220;
-const CUP_CENTER_Y = 140;
-const CUP_OFFSCREEN_X = -120;
+const CUP_CENTER_Y = 172;
+const CUP_OFFSCREEN_X = 500;
 
 let cups = [];
 let money = 0;
 let served = 0;
 let missed = 0;
 let missStreak = 0;
-let totalStars = 1;
-let maxStars = 10;
+let totalStars = 5;
+let maxStars = 50;
 let activeIdx = 0;
-let queue = [];
 let busy = false;
 let paused = false;
 
@@ -196,7 +194,19 @@ function randOrder(rating) {
     return true;
   });
   if (eligible.length === 0) return ORDER_TEMPLATES[0];
-  return eligible[Math.floor(Math.random() * eligible.length)];
+  var weights = eligible.map(function (t) {
+    var total = 0;
+    for (var k in t.ings) total += t.ings[k];
+    return total;
+  });
+  var totalWeight = 0;
+  for (var w = 0; w < weights.length; w++) totalWeight += weights[w];
+  var r = Math.random() * totalWeight;
+  for (var i = 0; i < eligible.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return eligible[i];
+  }
+  return eligible[eligible.length - 1];
 }
 
 function getRating() {
@@ -254,7 +264,9 @@ function getStarThresholds(rating) {
 }
 
 function cupPos(index) {
-  return { x: index === 0 ? CUP_CENTER_X : CUP_OFFSCREEN_X, y: CUP_CENTER_Y };
+  var scene = document.getElementById('scene');
+  var cx = scene ? scene.offsetWidth / 2 : 220;
+  return { x: index === 0 ? cx : CUP_OFFSCREEN_X, y: CUP_CENTER_Y };
 }
 
 function makeCup(design) {
@@ -321,10 +333,9 @@ function reposition(animate) {
 
 function initCups() {
   row.innerHTML = '';
-  cups = []; queue = [];
-  for (let i = 0; i < VISIBLE + 6; i++) queue.push(spawn());
+  cups = [];
   for (let i = 0; i < VISIBLE; i++) {
-    const c = queue.shift();
+    const c = spawn();
     row.appendChild(c.el);
     cups.push(c);
   }
@@ -676,7 +687,7 @@ function updateTimer(dt) {
     missStreak++;
     document.getElementById('missedDisplay').textContent = missed;
     totalStars += 0;
-    var missPenalty = 5 + Math.max(0, Math.floor(missStreak * 2) - (state.upgrades['cashier'] ? 2 : 0));
+    var missPenalty = Math.round(maxStars * 0.25) + Math.max(0, Math.round(missStreak * maxStars * 0.1) - (state.upgrades['cashier'] ? Math.round(maxStars * 0.1) : 0));
     maxStars += missPenalty;
     updateRating();
     updateOrderUI();
@@ -711,16 +722,17 @@ function advance() {
   if (!a || !a.full) return;
   busy = true;
 
+  a.el.classList.remove('active');
   a.el.querySelector('.cup-inner').style.animation = 'none';
   void a.el.offsetWidth;
   a.el.classList.add('exiting');
+  a.el.querySelector('.cup-inner').style.animation = '';
 
   setTimeout(function () {
     const removed = cups.shift();
     removed.el.remove();
 
-    let next = queue.shift();
-    if (!next) next = spawn();
+    let next = spawn();
     cups.push(next);
     row.appendChild(next.el);
 
@@ -729,10 +741,10 @@ function advance() {
     newEl.querySelector('.cup-inner').style.animation = 'none';
     void newEl.offsetWidth;
     reposition(true);
-    newEl.classList.add('entering');
+    cups[activeIdx].el.classList.add('entering');
 
     setTimeout(function () {
-      newEl.classList.remove('entering');
+      cups[activeIdx].el.classList.remove('entering');
       busy = false;
       updateOrderUI();
       applyAutoFill(cups[activeIdx]);
@@ -753,32 +765,32 @@ const UPGRADE_CATEGORIES = [
   {
     name: '\uD83C\uDFF0 Decor',
     upgrades: [
-      { id: 'plant', name: 'Potted Plant', desc: '+2s per order', icon: '\uD83C\uDF3F', cost: 30 },
-      { id: 'wallart', name: 'Wall Art', desc: '+15% money per order', icon: '\uD83D\uDDBC\uFE0F', cost: 80 },
-      { id: 'counter', name: 'New Counter', desc: '+1 bonus ingredient capacity', icon: '\uD83E\uDE9A', cost: 180 },
-      { id: 'window', name: 'Window Display', desc: '+3s per order', icon: '\uD83C\uDFE1', cost: 400 },
-      { id: 'lighting', name: 'Ambient Lighting', desc: '+2s, star money bonus', icon: '\uD83D\uDCA1', cost: 800 },
-      { id: 'outdoor', name: 'Outdoor Seating', desc: '+20% money per order', icon: '\uD83C\uDFD5\uFE0F', cost: 1600 },
-      { id: 'music', name: 'Music System', desc: '+4s per order', icon: '\uD83C\uDFB5', cost: 3200 },
-      { id: 'layout', name: 'Premium Layout', desc: '2\u00d7 all decor time bonuses', icon: '\u2728', cost: 6500 },
+      { id: 'plant', name: 'Potted Plant', desc: '+2s per order', icon: '\uD83C\uDF3F', cost: 20 },
+      { id: 'wallart', name: 'Wall Art', desc: '+15% money per order', icon: '\uD83D\uDDBC\uFE0F', cost: 40 },
+      { id: 'counter', name: 'New Counter', desc: '+1 bonus ingredient capacity', icon: '\uD83E\uDE9A', cost: 80 },
+      { id: 'window', name: 'Window Display', desc: '+3s per order', icon: '\uD83C\uDFE1', cost: 150 },
+      { id: 'lighting', name: 'Ambient Lighting', desc: '+2s, star money bonus', icon: '\uD83D\uDCA1', cost: 250 },
+      { id: 'outdoor', name: 'Outdoor Seating', desc: '+20% money per order', icon: '\uD83C\uDFD5\uFE0F', cost: 400 },
+      { id: 'music', name: 'Music System', desc: '+4s per order', icon: '\uD83C\uDFB5', cost: 650 },
+      { id: 'layout', name: 'Premium Layout', desc: '2\u00d7 all decor time bonuses', icon: '\u2728', cost: 1000 },
     ]
   },
   {
     name: '\uD83D\uDC77 Employees',
     upgrades: [
-      { id: 'barista', name: 'Part-time Barista', desc: 'Auto-fill 1 ingredient per order', icon: '\uD83D\uDC68\u200D\uD83C\uDF73', cost: 12000 },
-      { id: 'cashier', name: 'Cashier', desc: 'Reduce miss streak penalty by 2', icon: '\uD83D\uDCCB', cost: 24000 },
-      { id: 'inventory', name: 'Inventory Manager', desc: 'Loosen star thresholds', icon: '\uD83D\uDCCA', cost: 48000 },
-      { id: 'supervisor', name: 'Shift Supervisor', desc: 'Auto-advance on order complete', icon: '\uD83C\uDFC6', cost: 96000 },
+      { id: 'barista', name: 'Part-time Barista', desc: 'Auto-fill 1 ingredient per order', icon: '\uD83D\uDC68\u200D\uD83C\uDF73', cost: 1500 },
+      { id: 'cashier', name: 'Cashier', desc: 'Reduce miss streak penalty', icon: '\uD83D\uDCCB', cost: 2500 },
+      { id: 'inventory', name: 'Inventory Manager', desc: 'Loosen star thresholds', icon: '\uD83D\uDCCA', cost: 4000 },
+      { id: 'supervisor', name: 'Shift Supervisor', desc: 'Auto-advance on order complete', icon: '\uD83C\uDFC6', cost: 6500 },
     ]
   },
   {
     name: '\u2699\uFE0F Equipment',
     upgrades: [
-      { id: 'beans', name: 'Premium Beans', desc: '1.5\u00d7 money per order', icon: '\uD83C\uDF4E', cost: 180000 },
-      { id: 'milkfrother', name: 'Milk Frother', desc: '+1 tap for milk & cream', icon: '\uD83E\uDD5B', cost: 350000 },
-      { id: 'syrups', name: 'Syrup Dispenser', desc: '+1 tap for syrup/spices', icon: '\uD83C\uDF41', cost: 700000 },
-      { id: 'brewer', name: 'Master Brewer', desc: 'Timer 25% slower', icon: '\uD83C\uDFAF', cost: 1400000 },
+      { id: 'beans', name: 'Premium Beans', desc: '1.5\u00d7 money per order', icon: '\uD83C\uDF4E', cost: 10000 },
+      { id: 'milkfrother', name: 'Milk Frother', desc: '+1 tap for milk & cream', icon: '\uD83E\uDD5B', cost: 16000 },
+      { id: 'syrups', name: 'Syrup Dispenser', desc: '+1 tap for syrup/spices', icon: '\uD83C\uDF41', cost: 25000 },
+      { id: 'brewer', name: 'Master Brewer', desc: 'Timer 25% slower', icon: '\uD83C\uDFAF', cost: 40000 },
     ]
   }
 ];
@@ -849,7 +861,7 @@ var prevIngs = [];
 function regenerateLockedOrders(locked) {
   if (locked.length === 0) return;
   var rating = getRating();
-  var allCups = cups.concat(queue);
+  var allCups = cups.slice();
   for (var c = 0; c < allCups.length; c++) {
     var cup = allCups[c];
     if (!cup) continue;
@@ -1000,8 +1012,8 @@ function loadGame() {
       served = data.served || 0;
       missed = data.missed || 0;
       money = data.money || 0;
-      totalStars = data.totalStars !== undefined ? data.totalStars : 1;
-      maxStars = data.maxStars !== undefined ? data.maxStars : 10;
+      totalStars = data.totalStars !== undefined ? data.totalStars : 5;
+      maxStars = data.maxStars !== undefined ? data.maxStars : 50;
       state.upgrades = data.upgrades || {};
     } catch (e) {}
   }
@@ -1020,8 +1032,8 @@ function resetGame() {
     missed = 0;
     missStreak = 0;
     money = 0;
-    totalStars = 1;
-    maxStars = 10;
+    totalStars = 5;
+    maxStars = 50;
     state.upgrades = {};
     initCups();
     renderUpgrades();
@@ -1064,6 +1076,151 @@ function animate(time) {
 }
 
 /* ============================
+   COFFEE SHOP BACKGROUND
+   ============================ */
+
+function buildCoffeeShopBackground() {
+  var bgWallInner = document.getElementById('bgWallInner');
+  var bgPattern = document.getElementById('bgPattern');
+  var fLayer = document.getElementById('furnitureLayer');
+  if (!bgWallInner || !bgPattern || !fLayer) return;
+
+  // Wall color
+  bgWallInner.style.background = 'linear-gradient(180deg, #e8d5c0, #d4b898)';
+
+  // Diamond pattern
+  bgPattern.className = 'bg-pattern bg-pattern-diamond';
+
+  // --- Build all furniture ---
+  fLayer.innerHTML = '';
+
+  // Espresso Machine
+  var machine = document.createElement('div');
+  machine.className = 'furn-piece f-machine';
+  machine.style.right = '24px';
+  machine.innerHTML = '<div class="body"><div class="badge"></div></div><div class="group"></div><div class="drip"></div><div class="steam"></div>';
+  fLayer.appendChild(machine);
+
+  // Wall Shelf
+  var shelf = document.createElement('div');
+  shelf.className = 'furn-piece f-shelf';
+  shelf.style.left = '50px';
+  shelf.style.bottom = '100px';
+  shelf.innerHTML = '<div class="board"></div><div class="bracket-l"></div><div class="bracket-r"></div>';
+  var sItems = [
+    { cls:'book', left:6 }, { cls:'book', left:14 }, { cls:'jar', left:28 },
+    { cls:'cup', left:44 }, { cls:'book', left:56 }, { cls:'book', left:63 },
+    { cls:'jar', left:76 }, { cls:'cup', left:88 }
+  ];
+  for (var si = 0; si < sItems.length; si++) {
+    var item = document.createElement('div');
+    item.className = 'item ' + sItems[si].cls;
+    item.style.left = sItems[si].left + 'px';
+    shelf.appendChild(item);
+  }
+  fLayer.appendChild(shelf);
+
+  // Tall Cabinet
+  var cabinet = document.createElement('div');
+  cabinet.className = 'furn-piece f-cabinet';
+  cabinet.style.left = '10px';
+  cabinet.innerHTML = '<div class="cab-body"><div class="door"><div class="handle"></div></div></div>';
+  fLayer.appendChild(cabinet);
+
+  // Pendant Lights
+  var lPositions = [70, 160, 248];
+  var lColors = ['#8a6a4a', '#7a5a3a', '#9a7a5a'];
+  for (var li = 0; li < lPositions.length; li++) {
+    var light = document.createElement('div');
+    light.className = 'furn-piece f-light';
+    light.style.left = (lPositions[li] - 9) + 'px';
+    light.innerHTML = '<div class="cord"></div><div class="shade" style="background:linear-gradient(180deg,' + lColors[li] + ', #5a3a22);"><div class="glow"></div></div>';
+    fLayer.appendChild(light);
+  }
+
+  // Window
+  var win = document.createElement('div');
+  win.className = 'furn-piece f-window';
+  win.style.right = '70px';
+  win.style.top = '12px';
+  win.innerHTML = '<div class="frame"><div class="sun"></div></div><div class="curtain-l"></div><div class="curtain-r"></div>';
+  fLayer.appendChild(win);
+
+  // Coffee Grinder
+  var grinder = document.createElement('div');
+  grinder.className = 'furn-piece f-grinder';
+  grinder.style.right = '24px';
+  grinder.style.bottom = '54px';
+  grinder.innerHTML = '<div class="body"><div class="knob"></div></div><div class="hopper"></div><div class="spout"></div>';
+  fLayer.appendChild(grinder);
+
+  // Pastry Display
+  var pastry = document.createElement('div');
+  pastry.className = 'furn-piece f-pastry';
+  pastry.style.left = '170px';
+  pastry.style.bottom = '30px';
+  pastry.innerHTML = '<div class="base"></div><div class="glass"></div><div class="top"></div>';
+  var treats = [3, 12, 21];
+  var tColors = ['#c08050', '#d09060', '#b07040'];
+  for (var ti = 0; ti < treats.length; ti++) {
+    var t = document.createElement('div');
+    t.className = 'treat';
+    t.style.left = treats[ti] + 'px';
+    t.style.background = tColors[ti];
+    pastry.appendChild(t);
+  }
+  fLayer.appendChild(pastry);
+
+  // Wall Clock
+  var clock = document.createElement('div');
+  clock.className = 'furn-piece f-clock';
+  clock.style.right = '66px';
+  clock.style.top = '68px';
+  clock.innerHTML = '<div class="face"><div class="hand-h"></div><div class="hand-m"></div><div class="center"></div></div>';
+  fLayer.appendChild(clock);
+
+  // Cup Tree
+  var cuptree = document.createElement('div');
+  cuptree.className = 'furn-piece f-cuptree';
+  cuptree.style.left = '46px';
+  cuptree.innerHTML = '<div class="base"></div><div class="post"></div>';
+  var cArms = [
+    { side:'left', top:2 }, { side:'right', top:2 },
+    { side:'left', top:10 }, { side:'right', top:10 }
+  ];
+  for (var ai = 0; ai < cArms.length; ai++) {
+    var a = cArms[ai];
+    var arm = document.createElement('div');
+    arm.className = 'arm';
+    arm.style[a.side === 'left' ? 'left' : 'right'] = '-10px';
+    arm.style.top = a.top + 'px';
+    cuptree.appendChild(arm);
+    var cup = document.createElement('div');
+    cup.className = 'cup';
+    cup.style[a.side === 'left' ? 'left' : 'right'] = '-8px';
+    cup.style.top = a.top + 'px';
+    cuptree.appendChild(cup);
+  }
+  fLayer.appendChild(cuptree);
+
+  // Hanging Sign
+  var sign = document.createElement('div');
+  sign.className = 'furn-piece f-sign';
+  sign.style.left = '50%';
+  sign.style.transform = 'translateX(-50%)';
+  sign.innerHTML = '<div class="chain"></div><div class="board"><div class="line">COFFEE</div><div class="line">TEA</div></div>';
+  fLayer.appendChild(sign);
+
+  // Sink Basin
+  var sink = document.createElement('div');
+  sink.className = 'furn-piece f-sink';
+  sink.style.left = '230px';
+  sink.style.bottom = '30px';
+  sink.innerHTML = '<div class="basin"></div><div class="faucet"></div><div class="knob-l"></div><div class="knob-r"></div>';
+  fLayer.appendChild(sink);
+}
+
+/* ============================
    INIT
    ============================ */
 
@@ -1071,6 +1228,7 @@ function init() {
   loadGame();
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
+  buildCoffeeShopBackground();
   initCups();
   renderUpgrades();
   updateUI();

@@ -1,6 +1,6 @@
-# Coffee Conveyor — Order Fulfillment Game
+# Caramel Empire — Coffee Shop Order Fulfillment Game
 
-Isometric coffee conveyor order-fulfillment game. Pure vanilla HTML/CSS/JS, no build step.
+Coffee shop order-fulfillment game. Pure vanilla HTML/CSS/JS, no build step.
 
 ## Quick Start
 ```
@@ -9,56 +9,69 @@ npm run dev
 Opens at `http://localhost:3000`
 
 ## Files
-- `index.html` — Main game (header, stats bar, conveyor scene, order panel with timer, dynamic ingredient bar, upgrade shop)
-- `style.css` — All styles (conveyor, cups, circular timer, pause overlay, floating stars, ingredient bar, upgrade shop, hint log, animations)
-- `script.js` — Game logic (orders, ingredients, timer, cup cycle, upgrades, money, auto-fill, floating stars, particles, persistence)
-- `conveyor-demo.html` — Standalone demo (outdated, kept for reference)
+- `index.html` — Main game (header, stats bar, scene with background + furniture, order panel with timer, dynamic ingredient bar, upgrade shop)
+- `style.css` — All styles (background, furniture, cups, circular timer, pause overlay, floating stars, ingredient bar, upgrade shop, hint log, animations)
+- `script.js` — Game logic (orders, ingredients, timer, cup cycle, upgrades, money, auto-fill, floating stars, particles, persistence, background builder)
+- `demo-bg.html` — Standalone coffee shop background demo (furniture, patterns, palette)
 - `AGENTS.md` — Session context for AI continuation
 
 ## Gameplay
 - Each cup is a **customer order** with specific ingredient requirements and a circular countdown timer
-- Only the **center cup** is active; side cups show upcoming orders
+- Only the **center cup** is active; the offscreen cup waits on the right and slides in next
 - Click **ingredient buttons** to add ingredients to the active order; buttons dynamically appear/disappear based on rating
 - Complete all ingredient requirements before the timer runs out → order served with 1-5 stars
-- Timer expires → order missed → rating penalty (consecutive misses increase penalty by +2 each)
+- Timer expires → order missed → rating penalty (scales with maxStars)
 - Rating = `totalStars / maxStars` (displayed as percentage + ★★★★★)
 - Wrong ingredient **resets the recipe** (clears progress on same order, no timer reset, no miss penalty)
 - **Money** earned per order funds upgrades from the shop
 - Rating-based difficulty scaling: higher rating = shorter times, extra bonus ingredients, stricter star thresholds, new ingredient unlocks
 
 ## Stats Bar
-- Four stats displayed vertically (icon above text, centered): **Served** (☕), **Missed** (⏰), **Rating** (% + ★★★★★), **Money** (💰)
+- Four stats displayed in a row: **Served** (☕), **Missed** (⏰), **Rating** (% + ★★★★★), **Money** (💰)
 - Rating stat shows tooltip with formula: `totalStars / maxStars × 100`
 
-## Conveyor
-- Isometric belt: `scale(1, 0.5) rotate(-49deg)` on a 600×92px rectangle
-- 5 cups on a diagonal from bottom-left to top-right (DIAG_X=74, DIAG_Y=41, BASE_X=265, BASE_Y=155)
-- 10 distinct cup designs (`.d-0` through `.d-9`) with color-matched 3px borders
-- Active center cup is larger (scale 1.0) with pulse glow; side cups are smaller (scale 0.75)
+## Scene
+- Coffee shop 2D background with wall, wainscot, floor, counter, and 11 furniture pieces (espresso machine, shelf, cabinet, pendant lights, window, grinder, pastry display, clock, cup tree, hanging sign, sink)
+- Wall patterns: Plain, Brick, Subway Tile, Stripes, Diagonal, Polka Dots, Diamond (default), Wood Planks
+- Yellow warmth overlay with `mix-blend-mode: overlay`
+- Background rendered at z-index 0-1, game elements at z-index 3+
+- Furniture built by `buildCoffeeShopBackground()` on init
+
+## Conveyor / Cup Flow
+- Single active cup at center, one offscreen cup waiting on the right (`CUP_OFFSCREEN_X = 500`)
+- Cup enters by sliding **right → center** with a bounce
+- Cup exits by sliding **center → left** (`cupExitBounce` translate to -160px)
+- Enter/exit animations use CSS keyframes; the `left` transition handles the long slide, `transform` keyframe handles bounce
+- `.entering .cup-inner` and `.exiting .cup-inner` rules come after `.active .cup-inner` in CSS to override pulse glow
+- 10 distinct cup designs (`.d-0` through `.d-9`) with color-matched borders
 - Coffee fill rises in the cup as ingredients are added (percentage-based)
 - Steam particles while ingredients are being added
+- Cup center computed dynamically from `scene.offsetWidth / 2`
+- Cup sits on the counter top at y=172 (body bottom at y=186 = counter surface)
 
 ## Order System
-- **32 order templates** (Black Coffee, Espresso, Latte, Cappuccino, Mocha, Macchiato, Affogato, Irish Coffee, Cold Brew, Americano, Flat White, Con Panna, Ristretto, Cortado, Red Eye, Vienna, Frappe, Latte Macchiato, Cafe au Lait, Cafe Bombon, Egg Coffee, Galao, Maple Latte, Syrup Americano, Cinnamon Cappuccino, Cinnamon Mocha, Vanilla Dream, Vanilla Macchiato, Honey Bliss, Spiced Honey)
-- Templates have `minRating` thresholds (0.25/0.50/0.75/0.90) and are only available at sufficient rating
-- Templates that require locked ingredients are filtered out by `randOrder(rating)`
+- **30 order templates** (Black Coffee, Espresso, Latte, Cappuccino, Mocha, Macchiato, Affogato, Irish Coffee, Cold Brew, Americano, Flat White, Con Panna, Ristretto, Cortado, Red Eye, Vienna, Frappe, Latte Macchiato, Cafe au Lait, Cafe Bombon, Egg Coffee, Galao, Maple Latte, Syrup Americano, Cinnamon Cappuccino, Cinnamon Mocha, Vanilla Dream, Vanilla Macchiato, Honey Bliss, Spiced Honey)
+- Templates have `minRating` thresholds aligned with their ingredient unlock levels
+- `randOrder(rating)` filters by template minRating AND ingredient-level minRating; falls back to Black Coffee
+- **Weighted random selection** — probability proportional to ingredient count (5-ingredient Honey Bliss is 5× more likely than Black Coffee)
+- **No pre-generated queue** — each order spawns at current rating when needed
 - Each order has required ingredient counts (e.g., Coffee: 2, Milk: 1)
 - Timer counts down in real-time via `requestAnimationFrame`
 - Circular SVG clock arc depletes (green→yellow→red); shows "✓" when complete
-- Pause button freezes game loop dims scene with blur overlay
+- Pause button freezes game loop, dims scene with blur overlay
 
 ## Ingredients (9 total, 2 starter + 7 unlockable)
 | Ingredient | Icon | Unlocks At |
 |-----------|------|-----------|
 | Coffee | ☕ | Always |
 | Sugar | 🍚 | Always |
-| Milk | 🥛 | Rating ≥ 15% |
-| Cream | 🍦 | Rating ≥ 25% |
-| Choco | 🍫 | Rating ≥ 40% |
-| Syrup | 🍁 | Rating ≥ 55% |
-| Cinnamon | 🌿 | Rating ≥ 70% |
-| Vanilla | 🌼 | Rating ≥ 85% |
-| Honey | 🍯 | Rating ≥ 95% |
+| Milk | 🥛 | Rating ≥ 25% |
+| Cream | 🍦 | Rating ≥ 40% |
+| Choco | 🍫 | Rating ≥ 45% |
+| Syrup | 🍁 | Rating ≥ 50% |
+| Cinnamon | 🌿 | Rating ≥ 55% |
+| Vanilla | 🌼 | Rating ≥ 60% |
+| Honey | 🍯 | Rating ≥ 65% |
 
 - Each ingredient button has a distinct color
 - Buttons animate in on unlock (`.ing-btn-enter`), bar pulses when ingredients are lost (`.lock-pulse`)
@@ -69,17 +82,20 @@ Opens at `http://localhost:3000`
 - Per-order: 1-5 stars based on time remaining
   - Thresholds tighten with rating (two→five thresholds: 0.18→0.40 up to 0.78→0.92)
   - **Inventory Manager** upgrade reduces all thresholds by 0.06
-- Rating starts at 10% (`totalStars=1, maxStars=10`)
-- Consecutive misses add `5 + floor(missStreak × 2)` to maxStars (reset on serve); **Cashier** reduces penalty by 2
+- Rating starts at 10% (`totalStars=5, maxStars=50`)
+- On serve: `totalStars += stars (1-5)` and `maxStars += 5`
+- On miss: `maxStars += round(maxStars × 0.25) + round(missStreak × maxStars × 0.1) — cashier reduces streak part by round(maxStars × 0.1)`
+- Miss penalty scales with maxStars so it hurts proportionally at any level
 - Floating labels: "Incredible!" (5★), "Amazing!" (4★), "Perfect!" (3★), "Great!" (2★), "Good!" (1★), "Miss!" (0★)
 - Golden glow (`.float-stars`) animates upward at cup position
 
 ## Money System
-- Money replaces served as upgrade currency; served remains as pure stat
-- Formula: `floor(totalIngredientCount × baseTime/8 × starMultiplier)`
-  - `starMultiplier`: 1★=1, 2★=1.5, 3★=2, 4★=2.5, 5★=3
-  - Money multipliers (multiplicative): Wall Art ×1.15, Outdoor Seating ×1.20, Premium Beans ×1.50, Ambient Lighting ×(1 + 0.1×stars)
+- Formula: `floor(totalIngs × baseTime/8 × starMoney[stars])`
+  - `starMoney = [0, 0.5, 0.8, 1.1, 1.4, 1.8]` (indexed by star count)
+  - e.g., 1★=0.5×, 3★=1.1×, 5★=1.8×
+  - Upgrades (multiplicative): Wall Art ×1.15, Outdoor Seating ×1.20, Premium Beans ×1.50, Ambient Lighting ×(1 + 0.1×stars)
 - No starting money; static upgrade costs (no scaling)
+- Tip shown in orange when upgrades boost the base amount
 
 ## Upgrades (16 total, 3 categories)
 Any upgrade can be bought if you have enough money (no sequential lock).
@@ -87,30 +103,30 @@ Any upgrade can be bought if you have enough money (no sequential lock).
 ### 🏰 Decor
 | ID | Name | Effect | Cost |
 |----|------|--------|------|
-| plant | Potted Plant | +2s per order | 30 |
-| wallart | Wall Art | +15% money per order | 80 |
-| counter | New Counter | +1 bonus ingredient capacity | 180 |
-| window | Window Display | +3s per order | 400 |
-| lighting | Ambient Lighting | +2s, star money bonus | 800 |
-| outdoor | Outdoor Seating | +20% money per order | 1600 |
-| music | Music System | +4s per order | 3200 |
-| layout | Premium Layout | ×2 all decor time bonuses | 6500 |
+| plant | Potted Plant | +2s per order | 20 |
+| wallart | Wall Art | +15% money per order | 40 |
+| counter | New Counter | +1 bonus ingredient capacity | 80 |
+| window | Window Display | +3s per order | 150 |
+| lighting | Ambient Lighting | +2s, star money bonus | 250 |
+| outdoor | Outdoor Seating | +20% money per order | 400 |
+| music | Music System | +4s per order | 650 |
+| layout | Premium Layout | ×2 all decor time bonuses | 1000 |
 
 ### 👷 Employees
 | ID | Name | Effect | Cost |
 |----|------|--------|------|
-| barista | Part-time Barista | Auto-fill 1 ingredient per order | 12000 |
-| cashier | Cashier | Reduce miss streak penalty by 2 | 24000 |
-| inventory | Inventory Manager | Loosen star thresholds by 0.06 | 48000 |
-| supervisor | Shift Supervisor | Auto-advance on order complete | 96000 |
+| barista | Part-time Barista | Auto-fill 1 ingredient per order | 1500 |
+| cashier | Cashier | Reduce miss streak penalty | 2500 |
+| inventory | Inventory Manager | Loosen star thresholds by 0.06 | 4000 |
+| supervisor | Shift Supervisor | Auto-advance on order complete | 6500 |
 
 ### ⚙️ Equipment
 | ID | Name | Effect | Cost |
 |----|------|--------|------|
-| beans | Premium Beans | ×1.5 money per order | 180000 |
-| milkfrother | Milk Frother | +1 tap for milk & cream | 350000 |
-| syrups | Syrup Dispenser | +1 tap for syrup/spices | 700000 |
-| brewer | Master Brewer | Timer 25% slower | 1400000 |
+| beans | Premium Beans | ×1.5 money per order | 10000 |
+| milkfrother | Milk Frother | +1 tap for milk & cream | 16000 |
+| syrups | Syrup Dispenser | +1 tap for syrup/spices | 25000 |
+| brewer | Master Brewer | Timer 25% slower | 40000 |
 
 **Upgrade mechanics:**
 - Decor time bonuses are cumulative; Premium Layout doubles total
@@ -126,12 +142,13 @@ Any upgrade can be bought if you have enough money (no sequential lock).
 - Setting persisted separately (`coffeeSound` key in localStorage)
 
 ## Difficulty Scaling
-- `generateOrder(rating)`: time multiplier `max(0.4, 1.0 - rating × 0.5)`, bonus `floor(rating × 3)` extra ingredients, plus counter upgrade adds +1 to cap
-- `randOrder(rating)`: filters templates by minRating AND ingredient-level minRating; falls back to Black Coffee
-- `getStarThresholds(rating)`: two/thresholds tighten continuously from low to high rating
-- Ingredient unlocks at 15%, 25%, 40%, 55%, 70%, 85%, 95% rating
+- `generateOrder(rating)`: time multiplier `max(0.3, 1.0 - rating × 0.7)`, bonus `floor(rating × 3)` extra ingredients, plus counter upgrade adds +1 to cap
+- `randOrder(rating)`: weighted by ingredient count, filters by minRating AND ingredient-level minRating; falls back to Black Coffee
+- `getStarThresholds(rating)`: thresholds tighten continuously from low to high rating
+- Ingredient unlocks at 25%, 40%, 45%, 50%, 55%, 60%, 65% rating
 
 ## Visual FX
+- Coffee shop background built from CSS (wall, diamond pattern, wainscot, floor, counter, 11 furniture pieces)
 - Canvas-based particle system (ambient steam particles)
 - CSS pop/burst animations on ingredient add
 - Order complete burst particles
@@ -144,12 +161,13 @@ Any upgrade can be bought if you have enough money (no sequential lock).
 - Tip: `tipped $X !!` in orange, arcs upward-left, only shown when tip > 0
 - Tip also shown in hint log as orange `<span>` after base cost
 - Timer urgency pulse when low (<33%)
-- Cup enter/exit horizontal translateX animations, ruin shake on wrong ingredient
+- Cup enter (right→center with bounce) / exit (center→left) animations, ruin shake on wrong ingredient
 - Pause overlay with blur backdrop
 
 ## Hint Log
-- Chat-style scrollable log below scene
+- Chat-style scrollable log above counter, below cups
 - 3-row height, max 3 entries, auto-scrolls to latest
+- Older entries fade via CSS: `:nth-last-child(3)` at 0.4, `:nth-last-child(2)` at 0.7
 - Appears on order complete, miss, wrong ingredient, upgrade purchase
 - Uses `innerHTML` for styled tip display (orange `<span>` after base cost)
 
@@ -165,7 +183,7 @@ Any upgrade can be bought if you have enough money (no sequential lock).
 ## Key Functions
 - `getRating()` → returns `totalStars / maxStars` (0-1)
 - `generateOrder(rating)` → creates scaled order object with time, ingredients, bonus, decor time
-- `randOrder(rating)` → picks eligible template, filters by minRating and ingredient minRating
+- `randOrder(rating)` → picks eligible template (weighted by ingredient count), filters by minRating and ingredient minRating
 - `getStarThresholds(rating)` → `{five, four, three, two}` thresholds
 - `applyAutoFill(a)` → auto-fills 1 missing ingredient (Part-time Barista)
 - `showFloatingStars(stars, text, cupEl)` → animates star indicator at cup
@@ -177,6 +195,7 @@ Any upgrade can be bought if you have enough money (no sequential lock).
 - `updateTimerArc(a)` → updates circular SVG arc position and color
 - `renderUpgrades()` → renders category-based upgrade shop
 - `pushHint(msg)` → adds message to hint log
+- `buildCoffeeShopBackground()` → builds all furniture, applies wall color and diamond pattern
 
 ## Cup Designs
 - d-0: White ceramic, d-1: Red mug, d-2: Blue dots, d-3: Green matte, d-4: Yellow stripe

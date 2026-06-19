@@ -426,6 +426,8 @@ h1 {
   padding: 1px 0;
   animation: hintFadeIn 0.25s ease-out;
 }
+.hint-entry:nth-last-child(3) { opacity: 0.4; }
+.hint-entry:nth-last-child(2) { opacity: 0.7; }
 @keyframes hintFadeIn {
   0% { opacity: 0; transform: translateY(-4px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -465,31 +467,31 @@ h1 {
 }
 
 /* ---- Advance animations ---- */
-@keyframes cupExitBounce {
-  0% { transform: translateX(0) scale(1); opacity: 1; }
-  40% { transform: translateX(80px) scale(0.85); opacity: 0.6; }
-  100% { transform: translateX(160px) scale(0.6); opacity: 0; }
-}
-.cup-wrap.exiting .cup-inner {
-  animation: cupExitBounce 0.4s ease-in forwards;
-}
-
-@keyframes cupEnterBounce {
-  0% { transform: translateX(-60px) scale(0.4); opacity: 0; }
-  40% { transform: translateX(4px) scale(1.15); opacity: 1; }
-  70% { transform: translateX(-1px) scale(0.95); }
-  100% { transform: translateX(0) scale(1); opacity: 1; }
-}
-.cup-wrap.entering .cup-inner {
-  animation: cupEnterBounce 0.5s ease-out forwards;
-}
-
 @keyframes cupPulseGlow {
   0%, 100% { filter: drop-shadow(0 0 6px rgba(200,128,64,0.15)); }
   50% { filter: drop-shadow(0 0 22px rgba(200,128,64,0.4)); }
 }
 .cup-wrap.active .cup-inner {
   animation: cupPulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes cupExitBounce {
+  0% { transform: translateX(0) scale(1); opacity: 1; }
+  40% { transform: translateX(-80px) scale(0.85); opacity: 0.6; }
+  100% { transform: translateX(-160px) scale(0.6); opacity: 0; }
+}
+.cup-wrap.exiting .cup-inner {
+  animation: cupExitBounce 0.4s ease-in forwards;
+}
+
+@keyframes cupEnterBounce {
+  0% { transform: translateX(60px) scale(0.4); opacity: 0; }
+  40% { transform: translateX(-4px) scale(1.15); opacity: 1; }
+  70% { transform: translateX(1px) scale(0.95); }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+.cup-wrap.entering .cup-inner {
+  animation: cupEnterBounce 0.5s ease-out forwards;
 }
 
 .cup-wrap.ruined .cup-body {
@@ -1039,3 +1041,330 @@ h1 {
   .ing-btn { font-size: 0.7rem; padding: 10px 2px; }
   .order-item { font-size: 0.7rem; }
 }
+
+/* ============================
+   COFFEE SHOP BACKGROUND
+   ============================ */
+
+/* ---- Wall ---- */
+#scene .bg-wall {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0px, transparent 58px, rgba(0,0,0,0.03) 58px, rgba(0,0,0,0.03) 60px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 39px, rgba(0,0,0,0.02) 39px, rgba(0,0,0,0.02) 40px);
+}
+#scene .bg-wall-inner {
+  position: absolute; inset: 0; z-index: 0;
+}
+
+/* ---- Wall Pattern ---- */
+#scene .bg-pattern {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+#scene .bg-pattern-diamond {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0px, transparent 11px, rgba(0,0,0,0.05) 11px, rgba(0,0,0,0.05) 12px),
+    repeating-linear-gradient(-45deg, transparent 0px, transparent 11px, rgba(0,0,0,0.05) 11px, rgba(0,0,0,0.05) 12px);
+  background-size: 24px 24px;
+}
+
+/* ---- Warmth Overlay ---- */
+#scene .bg-warmth {
+  position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, rgba(255,200,100,0.08), rgba(255,180,80,0.04));
+  pointer-events: none; mix-blend-mode: overlay;
+}
+
+/* ---- Baseboard ---- */
+#scene .bg-baseboard {
+  position: absolute; left: 0; right: 0;
+  bottom: 136px; height: 4px; z-index: 0;
+  background: linear-gradient(180deg, #6a4a2e, #4a2a14);
+}
+
+/* ---- Wainscot ---- */
+#scene .bg-wainscot {
+  position: absolute; left: 0; right: 0;
+  bottom: 0; height: 140px; z-index: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0px, transparent 59px, rgba(0,0,0,0.06) 59px, rgba(0,0,0,0.06) 61px),
+    linear-gradient(180deg, #5a4028, #4a3018);
+}
+#scene .bg-wainscot::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0px, transparent 119px, rgba(0,0,0,0.03) 119px, rgba(0,0,0,0.03) 121px);
+}
+
+/* ---- Floor ---- */
+#scene .bg-floor {
+  position: absolute; left: 0; right: 0;
+  bottom: 0; height: 152px; z-index: 0;
+  background: repeating-conic-gradient(#4a3828 0% 25%, #3a2818 0% 50%) 0 0 / 40px 40px;
+  opacity: 0.35;
+}
+
+/* ---- Counter ---- */
+#scene .bg-counter {
+  position: absolute; left: 0; right: 0;
+  bottom: 0; height: 30px; z-index: 1;
+  background: linear-gradient(180deg, #6a4a2e, #4a2a14);
+  border-top: 2px solid rgba(255,255,255,0.06);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.25);
+}
+#scene .bg-counter::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+}
+#scene .counter-top {
+  position: absolute;
+  top: -4px; left: -1px; right: -1px; height: 5px; z-index: 1;
+  background: linear-gradient(180deg, #7a5a3a, #5a3a22);
+  border-radius: 3px 3px 0 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
+}
+
+/* ---- Furniture Layer ---- */
+#scene #furnitureLayer {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+}
+#scene .furn-piece { position: absolute; }
+
+/* ---- Espresso Machine ---- */
+#scene .f-machine { position: absolute; bottom: 30px; z-index: 1; }
+#scene .f-machine .body {
+  width: 38px; height: 24px;
+  background: linear-gradient(180deg, #888, #666);
+  border-radius: 3px 3px 2px 2px; border: 1px solid #555; position: relative;
+}
+#scene .f-machine .body::before {
+  content: ''; position: absolute; top: 3px; left: 3px; right: 3px; height: 5px;
+  background: linear-gradient(180deg, #aaa, #888); border-radius: 2px;
+}
+#scene .f-machine .group {
+  position: absolute; left: 5px; bottom: -3px;
+  width: 7px; height: 5px; background: #555; border-radius: 0 0 2px 2px;
+}
+#scene .f-machine .drip {
+  position: absolute; left: 19px; bottom: -5px;
+  width: 10px; height: 7px; background: #777;
+  border-radius: 0 0 2px 2px; border: 1px solid #555; border-top: none;
+}
+#scene .f-machine .steam {
+  position: absolute; right: 3px; bottom: -7px;
+  width: 3px; height: 8px; background: #999; border-radius: 1px;
+}
+#scene .f-machine .badge {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 12px; height: 5px; background: #c09070; border-radius: 1px; opacity: 0.6;
+}
+
+/* ---- Wall Shelf ---- */
+#scene .f-shelf { position: absolute; z-index: 1; }
+#scene .f-shelf .board {
+  width: 100px; height: 3px;
+  background: linear-gradient(180deg, #7a5a3a, #5a3a22); border-radius: 1px;
+}
+#scene .f-shelf .bracket-l, #scene .f-shelf .bracket-r {
+  position: absolute; bottom: -6px; width: 2px; height: 6px;
+  background: #4a2a14; border-radius: 1px;
+}
+#scene .f-shelf .bracket-l { left: 8px; }
+#scene .f-shelf .bracket-r { right: 8px; }
+#scene .f-shelf .item { position: absolute; bottom: 3px; border-radius: 1px; }
+#scene .f-shelf .item.book {
+  width: 5px; height: 11px; background: #c06040;
+  border-left: 1px solid rgba(255,255,255,0.1);
+}
+#scene .f-shelf .item.jar {
+  width: 7px; height: 10px; background: rgba(200,200,200,0.3);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 1px 1px 2px 2px;
+}
+#scene .f-shelf .item.cup {
+  width: 6px; height: 7px; background: #d0c0b0;
+  border-radius: 0 0 2px 2px; border: 1px solid #b0a090; border-top: none;
+}
+
+/* ---- Tall Cabinet ---- */
+#scene .f-cabinet { position: absolute; bottom: 30px; z-index: 1; }
+#scene .f-cabinet .cab-body {
+  width: 34px; height: 58px;
+  background: linear-gradient(180deg, #6a4a2e, #4a2a14);
+  border-radius: 2px; border: 1px solid #3a1a0a; position: relative;
+}
+#scene .f-cabinet .cab-body::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(180deg, #8a6a4a, #6a4a2e); border-radius: 2px 2px 0 0;
+}
+#scene .f-cabinet .door {
+  position: absolute; top: 6px; left: 3px; right: 3px; bottom: 3px;
+  background: linear-gradient(180deg, #5a3a22, #4a2a14);
+  border: 1px solid #3a1a0a; border-radius: 1px;
+}
+#scene .f-cabinet .handle {
+  position: absolute; top: 50%; right: 2px;
+  transform: translateY(-50%); width: 2px; height: 5px;
+  background: #c09070; border-radius: 1px;
+}
+
+/* ---- Pendant Lights ---- */
+#scene .f-light { position: absolute; top: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+#scene .f-light .cord { width: 1px; height: 16px; background: #2a1a0e; }
+#scene .f-light .shade {
+  width: 18px; height: 10px;
+  background: linear-gradient(180deg, #8a6a4a, #5a3a22);
+  border-radius: 9px 9px 2px 2px; position: relative;
+}
+#scene .f-light .glow {
+  position: absolute; bottom: 0; left: 2px; right: 2px; height: 4px;
+  background: radial-gradient(ellipse, #ffe880 30%, transparent 70%); opacity: 0.4;
+}
+
+/* ---- Window ---- */
+#scene .f-window { position: absolute; z-index: 0; }
+#scene .f-window .frame {
+  width: 60px; height: 46px;
+  background: linear-gradient(180deg, #b8d8e8, #98c0d8);
+  border: 2px solid #6a4a2e; border-radius: 2px; position: relative;
+}
+#scene .f-window .frame::before {
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 1.5px; background: #6a4a2e; transform: translateX(-50%);
+}
+#scene .f-window .frame::after {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0;
+  height: 1.5px; background: #6a4a2e; transform: translateY(-50%);
+}
+#scene .f-window .curtain-l, #scene .f-window .curtain-r {
+  position: absolute; top: -2px; width: 8px; height: 50px;
+  background: linear-gradient(180deg, #b08060, #906040); border-radius: 2px; opacity: 0.6;
+}
+#scene .f-window .curtain-l { left: -8px; }
+#scene .f-window .curtain-r { right: -8px; }
+#scene .f-window .sun {
+  position: absolute; right: 5px; top: 4px; width: 10px; height: 10px;
+  background: radial-gradient(circle, #ffe880, #f0c840); border-radius: 50%;
+}
+
+/* ---- Coffee Grinder ---- */
+#scene .f-grinder { position: absolute; bottom: 30px; z-index: 1; }
+#scene .f-grinder .body {
+  width: 22px; height: 18px;
+  background: linear-gradient(180deg, #777, #555);
+  border-radius: 2px; border: 1px solid #444; position: relative;
+}
+#scene .f-grinder .hopper {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 12px; height: 10px;
+  background: linear-gradient(180deg, #666, #444);
+  border-radius: 4px 4px 2px 2px; border: 1px solid #333;
+}
+#scene .f-grinder .spout {
+  position: absolute; right: -4px; bottom: 3px;
+  width: 5px; height: 6px; background: #555;
+  border-radius: 0 2px 2px 0; border: 1px solid #444; border-left: none;
+}
+#scene .f-grinder .knob {
+  position: absolute; left: 2px; bottom: 1px;
+  width: 3px; height: 3px; background: #c09070; border-radius: 50%;
+}
+
+/* ---- Pastry Display ---- */
+#scene .f-pastry { position: absolute; bottom: 30px; z-index: 1; }
+#scene .f-pastry .base {
+  width: 30px; height: 5px;
+  background: linear-gradient(180deg, #8a6a4a, #6a4a2e); border-radius: 2px;
+}
+#scene .f-pastry .glass {
+  position: absolute; bottom: 4px; left: 1px; right: 1px; height: 14px;
+  background: linear-gradient(180deg, rgba(200,220,240,0.12), rgba(200,220,240,0.06));
+  border: 1px solid rgba(255,255,255,0.06); border-radius: 1px; border-bottom: none;
+}
+#scene .f-pastry .treat {
+  position: absolute; bottom: 8px; width: 4px; height: 3px; border-radius: 50%;
+}
+#scene .f-pastry .top {
+  position: absolute; bottom: 18px; left: 0; right: 0; height: 1.5px;
+  background: rgba(255,255,255,0.06); border-radius: 1px;
+}
+
+/* ---- Wall Clock ---- */
+#scene .f-clock { position: absolute; z-index: 1; }
+#scene .f-clock .face {
+  width: 18px; height: 18px;
+  background: linear-gradient(180deg, #f0ece4, #e0dcd4);
+  border-radius: 50%; border: 2px solid #6a4a2e; position: relative;
+}
+#scene .f-clock .hand-h {
+  position: absolute; left: 50%; bottom: 50%;
+  width: 1.5px; height: 4px; background: #2a1a0e;
+  border-radius: 1px; transform-origin: bottom center;
+  transform: translateX(-50%) rotate(30deg);
+}
+#scene .f-clock .hand-m {
+  position: absolute; left: 50%; bottom: 50%;
+  width: 1px; height: 6px; background: #2a1a0e;
+  border-radius: 1px; transform-origin: bottom center;
+  transform: translateX(-50%) rotate(-20deg);
+}
+#scene .f-clock .center {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px; height: 2px; background: #2a1a0e; border-radius: 50%;
+}
+
+/* ---- Cup Tree ---- */
+#scene .f-cuptree { position: absolute; bottom: 30px; z-index: 1; }
+#scene .f-cuptree .post {
+  width: 2.5px; height: 22px; background: #5a3a22;
+  margin: 0 auto; border-radius: 1px; position: relative;
+}
+#scene .f-cuptree .base {
+  width: 14px; height: 2.5px; background: #4a2a14;
+  margin: 0 auto; border-radius: 1px;
+}
+#scene .f-cuptree .arm {
+  position: absolute; width: 10px; height: 1.5px;
+  background: #5a3a22; border-radius: 1px;
+}
+#scene .f-cuptree .cup {
+  position: absolute; bottom: 3px;
+  width: 5px; height: 6px; background: #d0c0b0;
+  border-radius: 0 0 2px 2px; border: 1px solid #b0a090; border-top: none;
+}
+
+/* ---- Hanging Sign ---- */
+#scene .f-sign { position: absolute; top: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+#scene .f-sign .chain { width: 1px; height: 14px; background: #4a2a14; }
+#scene .f-sign .board {
+  width: 44px; height: 18px;
+  background: linear-gradient(135deg, #2a1a0e, #1a0e08);
+  border: 1px solid #4a2a14; border-radius: 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+#scene .f-sign .line { font-size: 0.25rem; color: #e8d8b8; letter-spacing: 0.1em; line-height: 1.3; }
+
+/* ---- Sink Basin ---- */
+#scene .f-sink { position: absolute; bottom: 30px; z-index: 1; }
+#scene .f-sink .basin {
+  width: 26px; height: 8px;
+  background: linear-gradient(180deg, #ccc, #999);
+  border-radius: 0 0 2px 2px; border: 1px solid #888; border-top: none;
+}
+#scene .f-sink .faucet {
+  position: absolute; top: -5px; left: 50%; transform: translateX(-50%);
+  width: 2.5px; height: 6px; background: #bbb; border-radius: 1px;
+}
+#scene .f-sink .faucet::after {
+  content: ''; position: absolute; bottom: -1.5px;
+  left: -2px; right: -2px; height: 1.5px; background: #ccc; border-radius: 1px;
+}
+#scene .f-sink .knob-l, #scene .f-sink .knob-r {
+  position: absolute; top: -5px;
+  width: 3px; height: 3px; background: #c09070; border-radius: 50%;
+}
+#scene .f-sink .knob-l { left: 3px; }
+#scene .f-sink .knob-r { right: 3px; }
