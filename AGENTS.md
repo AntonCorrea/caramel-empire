@@ -9,21 +9,21 @@ npm run dev
 Opens at `http://localhost:3000`
 
 ## Files
-- `index.html` — Main game (header, stats bar, scene with background + furniture, order panel with timer, dynamic ingredient bar, upgrade shop)
-- `style.css` — All styles (background, furniture, cups, circular timer, pause overlay, floating stars, ingredient bar, upgrade shop, hint log, animations)
-- `script.js` — Game logic (orders, ingredients, timer, cup cycle, upgrades, money, auto-fill, floating stars, particles, persistence, background builder)
-- `demo-bg.html` — Standalone coffee shop background demo (furniture, patterns, palette)
+- `index.html` — Main game (header, stats bar, scene, order panel, timer, ingredient bar, level panel, active effects, owned upgrades, level-up modal)
+- `style.css` — All styles (background, furniture, cups, circular timer, pause overlay, floating stars, ingredient bar, level panel, upgrades, hint log, animations, profiler)
+- `script.js` — Game logic (orders, ingredients, timer, cup cycle, level/XP system, upgrades, money, floating stars, particles, persistence, background builder, profiler)
+- `demo-bg.html` — Standalone coffee shop background demo
 - `AGENTS.md` — Session context for AI continuation
 
 ## Gameplay
 - Each cup is a **customer order** with specific ingredient requirements and a circular countdown timer
 - Only the **center cup** is active; the offscreen cup waits on the right and slides in next
-- Click **ingredient buttons** to add ingredients to the active order; buttons dynamically appear/disappear based on rating
+- Click **ingredient buttons** (or press **1-9** keys) to add ingredients to the active order
 - Complete all ingredient requirements before the timer runs out → order served with 1-5 stars
-- Timer expires → order missed → rating penalty (scales with maxStars)
+- Timer expires → order missed → rating penalty
 - Rating = `totalStars / maxStars` (displayed as percentage + ★★★★★)
 - Wrong ingredient **resets the recipe** (clears progress on same order, no timer reset, no miss penalty)
-- **Money** earned per order funds upgrades from the shop
+- **Money** earned per order = XP; when `money >= nextLevelXP`, you level up and pick 1 of 3 random upgrades
 - Rating-based difficulty scaling: higher rating = shorter times, extra bonus ingredients, stricter star thresholds, new ingredient unlocks
 
 ## Stats Bar
@@ -31,31 +31,29 @@ Opens at `http://localhost:3000`
 - Rating stat shows tooltip with formula: `totalStars / maxStars × 100`
 
 ## Scene
-- Coffee shop 2D background with wall, wainscot, floor, counter, and 11 furniture pieces (espresso machine, shelf, cabinet, pendant lights, window, grinder, pastry display, clock, cup tree, hanging sign, sink)
+- Coffee shop 2D background with wall, wainscot, floor, counter, and 11 furniture pieces
 - Wall patterns: Plain, Brick, Subway Tile, Stripes, Diagonal, Polka Dots, Diamond (default), Wood Planks
 - Yellow warmth overlay with `mix-blend-mode: overlay`
-- Background rendered at z-index 0-1, game elements at z-index 3+
+- Background at z-index 0-1, game elements at z-index 3+
 - Furniture built by `buildCoffeeShopBackground()` on init
 
 ## Conveyor / Cup Flow
 - Single active cup at center, one offscreen cup waiting on the right (`CUP_OFFSCREEN_X = 500`)
-- Cup enters by sliding **right → center** with a bounce
-- Cup exits by sliding **center → left** (`cupExitBounce` translate to -160px)
-- Enter/exit animations use CSS keyframes; the `left` transition handles the long slide, `transform` keyframe handles bounce
-- `.entering .cup-inner` and `.exiting .cup-inner` rules come after `.active .cup-inner` in CSS to override pulse glow
+- Cup enters: slide right→center with bounce (scale overshoot 0.4→1.15→0.95→1.0)
+- Cup exits: slide center→left with matching bounce (no shrink/fade)
+- `.entering .cup-inner` and `.exiting .cup-inner` rules come after `.active .cup-inner` to override pulse glow
 - 10 distinct cup designs (`.d-0` through `.d-9`) with color-matched borders
-- Coffee fill rises in the cup as ingredients are added (percentage-based)
+- Coffee fill rises as ingredients are added (percentage-based)
 - Steam particles while ingredients are being added
-- Cup center computed dynamically from `scene.offsetWidth / 2`
+- Cup center computed from `scene.offsetWidth / 2`
 - Cup sits on the counter top at y=172 (body bottom at y=186 = counter surface)
 
 ## Order System
-- **30 order templates** (Black Coffee, Espresso, Latte, Cappuccino, Mocha, Macchiato, Affogato, Irish Coffee, Cold Brew, Americano, Flat White, Con Panna, Ristretto, Cortado, Red Eye, Vienna, Frappe, Latte Macchiato, Cafe au Lait, Cafe Bombon, Egg Coffee, Galao, Maple Latte, Syrup Americano, Cinnamon Cappuccino, Cinnamon Mocha, Vanilla Dream, Vanilla Macchiato, Honey Bliss, Spiced Honey)
-- Templates have `minRating` thresholds aligned with their ingredient unlock levels
+- **30 order templates** (Black Coffee through Spiced Honey)
+- Templates have `minRating` thresholds aligned with ingredient unlock levels
 - `randOrder(rating)` filters by template minRating AND ingredient-level minRating; falls back to Black Coffee
-- **Weighted random selection** — probability proportional to ingredient count (5-ingredient Honey Bliss is 5× more likely than Black Coffee)
+- **Weighted random selection** — probability proportional to ingredient count
 - **No pre-generated queue** — each order spawns at current rating when needed
-- Each order has required ingredient counts (e.g., Coffee: 2, Milk: 1)
 - Timer counts down in real-time via `requestAnimationFrame`
 - Circular SVG clock arc depletes (green→yellow→red); shows "✓" when complete
 - Pause button freezes game loop, dims scene with blur overlay
@@ -73,130 +71,125 @@ Opens at `http://localhost:3000`
 | Vanilla | 🌼 | Rating ≥ 60% |
 | Honey | 🍯 | Rating ≥ 65% |
 
-- Each ingredient button has a distinct color
-- Buttons animate in on unlock (`.ing-btn-enter`), bar pulses when ingredients are lost (`.lock-pulse`)
-- When rating drops below a threshold, locked ingredients' orders are regenerated via `regenerateLockedOrders()`
-- Error feedback for: ingredient not needed, ingredient already full, or busy/timed out order
+- Each ingredient button has a distinct color, triggers via click or key 1-9
+- Buttons animate in on unlock, bar pulses when ingredients are lost
+- Wrong ingredient feedback: red pops, error sound, recipe reset
 
 ## Star Rating (1-5★)
 - Per-order: 1-5 stars based on time remaining
   - Thresholds tighten with rating (two→five thresholds: 0.18→0.40 up to 0.78→0.92)
-  - **Inventory Manager** upgrade reduces all thresholds by 0.06
+  - **Inventory Manager** reduces all thresholds by 0.06 per level
 - Rating starts at 10% (`totalStars=5, maxStars=50`)
 - On serve: `totalStars += stars (1-5)` and `maxStars += 5`
-- On miss: `maxStars += round(maxStars × 0.25) + round(missStreak × maxStars × 0.1) — cashier reduces streak part by round(maxStars × 0.1)`
-- Miss penalty scales with maxStars so it hurts proportionally at any level
+- On miss: `maxStars += round(maxStars × 0.25) + round(missStreak × maxStars × 0.1)`
 - Floating labels: "Incredible!" (5★), "Amazing!" (4★), "Perfect!" (3★), "Great!" (2★), "Good!" (1★), "Miss!" (0★)
-- Golden glow (`.float-stars`) animates upward at cup position
 
-## Money System
+## Money / XP System
 - Formula: `floor(totalIngs × baseTime/8 × starMoney[stars])`
-  - `starMoney = [0, 0.5, 0.8, 1.1, 1.4, 1.8]` (indexed by star count)
-  - e.g., 1★=0.5×, 3★=1.1×, 5★=1.8×
-  - Upgrades (multiplicative): Wall Art ×1.15, Outdoor Seating ×1.20, Premium Beans ×1.50, Ambient Lighting ×(1 + 0.1×stars)
-- No starting money; static upgrade costs (no scaling)
-- Tip shown in orange when upgrades boost the base amount
+  - `starMoney = [0, 0.5, 0.8, 1.1, 1.4, 1.8]`
+- Money bonuses stack **additively**: wallart (+10%/lvl), outdoor (+10%/lvl), beans (+15%/lvl), lighting gives up to +5%/star/lvl
+- XP curve: `20 + level × 15 + floor(level² × 0.5)`
+- On level-up: `money -= nextLevelXP` (overflow carries over), game pauses, choose 1 of 3 random eligible upgrades
 
-## Upgrades (16 total, 3 categories)
-Any upgrade can be bought if you have enough money (no sequential lock).
+## Upgrades (18 total, 3 tiers each)
+Any upgrade can be bought on level-up (shown 3 at random). Each stackable to level 3 (I/II/III).
 
-### 🏰 Decor
-| ID | Name | Effect | Cost |
-|----|------|--------|------|
-| plant | Potted Plant | +2s per order | 20 |
-| wallart | Wall Art | +15% money per order | 40 |
-| counter | New Counter | +1 bonus ingredient capacity | 80 |
-| window | Window Display | +3s per order | 150 |
-| lighting | Ambient Lighting | +2s, star money bonus | 250 |
-| outdoor | Outdoor Seating | +20% money per order | 400 |
-| music | Music System | +4s per order | 650 |
-| layout | Premium Layout | ×2 all decor time bonuses | 1000 |
+### 🏰 Decor (7)
+| ID | T1/T2/T3 Names | Effect per level |
+|----|----------------|-----------------|
+| plant | Potted Plant / Flowering Plant / Exotic Orchid | +1s per order |
+| wallart | Wall Art / Gallery Wall / Masterpiece | +10% money |
+| window | Window Display / Bay Window / Panoramic View | +1s per order |
+| lighting | Ambient Lighting / Warm Lighting / Designer Lighting | +1s per order + star money bonus |
+| outdoor | Outdoor Seating / Patio / Rooftop Terrace | +10% money |
+| music | Music System / Sound System / Live Band | +1s per order |
+| layout | Premium Layout / Executive Layout / Grand Layout | ×1.5/2.0/2.5 decor time |
 
-### 👷 Employees
-| ID | Name | Effect | Cost |
-|----|------|--------|------|
-| barista | Part-time Barista | Auto-fill 1 ingredient per order | 1500 |
-| cashier | Cashier | Reduce miss streak penalty | 2500 |
-| inventory | Inventory Manager | Loosen star thresholds by 0.06 | 4000 |
-| supervisor | Shift Supervisor | Auto-advance on order complete | 6500 |
+### 👷 Employees (2)
+| ID | T1/T2/T3 Names | Effect per level |
+|----|----------------|-----------------|
+| inventory | Inventory Manager / Inventory Analyst / Inventory Director | -6% star thresholds |
+| supervisor | Shift Supervisor / Store Manager / Regional Manager | Skip order delay |
 
-### ⚙️ Equipment
-| ID | Name | Effect | Cost |
-|----|------|--------|------|
-| beans | Premium Beans | ×1.5 money per order | 10000 |
-| milkfrother | Milk Frother | +1 tap for milk & cream | 16000 |
-| syrups | Syrup Dispenser | +1 tap for syrup/spices | 25000 |
-| brewer | Master Brewer | Timer 25% slower | 40000 |
+### ⚙️ Equipment (9)
+| ID | T1/T2/T3 Names | Effect per level |
+|----|----------------|-----------------|
+| beans | Premium Beans / Single-Origin / Reserve Blend | +15% money |
+| sugar_tap | Sugar Shot / Sugar Stream / Sugar Flood | +1 sugar per click |
+| milk_tap | Milk Splash / Milk Pour / Milk Cascade | +1 milk per click |
+| cream_tap | Cream Dollop / Cream Swirl / Cream Wave | +1 cream per click |
+| choco_tap | Choco Dust / Choco Drizzle / Choco Deluge | +1 choco per click |
+| syrup_tap | Syrup Drop / Syrup Stream / Syrup River | +1 syrup per click |
+| cinnamon_tap | Cinnamon Dust / Cinnamon Swirl / Cinnamon Storm | +1 cinnamon per click |
+| vanilla_tap | Vanilla Drop / Vanilla Pour / Vanilla Flood | +1 vanilla per click |
+| honey_tap | Honey Drip / Honey Flow / Honey Cascade | +1 honey per click |
 
-**Upgrade mechanics:**
-- Decor time bonuses are cumulative; Premium Layout doubles total
-- Part-time Barista: when cup enters active, fills 1 random missing ingredient
-- Milk Frother: adds +1 per click on milk/cream ingredients
-- Syrup Dispenser: adds +1 per click on syrup/cinnamon/vanilla/honey ingredients
-- Shift Supervisor: skips the 450ms advance delay after order complete
-- Master Brewer: timer runs at 0.75× speed
+## Level Panel (right sidebar)
+- **Level bar**: current level, XP progress bar (money / nextLevelXP), money/XP text
+- **Active Effects**: grouped text summary — total time bonus, total money %, star money, tap upgrades per ingredient, threshold reduction, supervisor status
+- **Active Upgrades**: vertical list of owned upgrades with icon, tier name, Roman numeral badge (I/II/III), and numeric description
 
-## Sound
-- Web Audio API for sound effects (pop, ding, complete, error)
-- Toggle via sound button in header
-- Setting persisted separately (`coffeeSound` key in localStorage)
+## Level-Up Modal
+- Pauses game, blurred backdrop
+- Shows "⬆️ LEVEL UP!" with 3 random eligible upgrade cards
+- Each card shows icon, tier name, level badge, upgrade description
+- Click to pick; if overflow XP still triggers next level, chains immediately
+
+## Keyboard
+- Keys **1-9**: activate the Nth visible ingredient button in the bar
 
 ## Difficulty Scaling
-- `generateOrder(rating)`: time multiplier `max(0.3, 1.0 - rating × 0.7)`, bonus `floor(rating × 3)` extra ingredients, plus counter upgrade adds +1 to cap
-- `randOrder(rating)`: weighted by ingredient count, filters by minRating AND ingredient-level minRating; falls back to Black Coffee
+- `generateOrder(rating)`: time multiplier `max(0.3, 1.0 - rating × 0.7)`, bonus `floor(rating × 3)` extra random ingredients
+- `randOrder(rating)`: weighted by ingredient count, filters by minRating and ingredient minRating
 - `getStarThresholds(rating)`: thresholds tighten continuously from low to high rating
 - Ingredient unlocks at 25%, 40%, 45%, 50%, 55%, 60%, 65% rating
 
 ## Visual FX
-- Coffee shop background built from CSS (wall, diamond pattern, wainscot, floor, counter, 11 furniture pieces)
-- Canvas-based particle system (ambient steam particles)
-- CSS pop/burst animations on ingredient add
-- Order complete burst particles
-- Floating labels (stars, money, tip) use two-element nesting for smooth parabolic arc:
-  - `.float-arc` (outer) animates `translateX` with `ease-in`
-  - `.float-*-inner` (inner) animates `translateY` with `ease-out` + scale + opacity
-  - Labels arc upward from cup, last 1s (animation) + linger in DOM for 1.2s
-- Stars: single label with only filled stars (e.g. ★★★), no empty ☆, size 1.4rem
-- Money: `+$X` shows base cost, arcs upward-right
-- Tip: `tipped $X !!` in orange, arcs upward-left, only shown when tip > 0
-- Tip also shown in hint log as orange `<span>` after base cost
+- Canvas-based particle system (ambient steam)
+- CSS pop/burst animations on ingredient add, order complete
+- Floating labels (stars, money, tip) use two-element nesting for parabolic arc
+- Stars: single label with filled stars only, size 1.4rem
+- Money: `+$X` arcs upward-right; Tip: `tipped $X !!` in orange arcs upward-left
 - Timer urgency pulse when low (<33%)
-- Cup enter (right→center with bounce) / exit (center→left) animations, ruin shake on wrong ingredient
+- Cup enter/exit bounce, ruin shake on wrong ingredient
 - Pause overlay with blur backdrop
 
 ## Hint Log
 - Chat-style scrollable log above counter, below cups
-- 3-row height, max 3 entries, auto-scrolls to latest
-- Older entries fade via CSS: `:nth-last-child(3)` at 0.4, `:nth-last-child(2)` at 0.7
-- Appears on order complete, miss, wrong ingredient, upgrade purchase
-- Uses `innerHTML` for styled tip display (orange `<span>` after base cost)
+- 3-row height, max 3 entries, auto-scrolls
+- Older entries fade: `:nth-last-child(3)` at 0.4, `:nth-last-child(2)` at 0.7
+- Shows order complete, miss, wrong ingredient, upgrade info
+
+## Profiler
+- Toggle with 'P' key
+- Shows FPS, frame min/avg/max ms, timer/orderUI ms/frame, frame count
+- First frame of animate loop skipped to avoid delta spike from `lastTime = 0`
 
 ## Tech
 - Vanilla JS (no template literals, no arrow functions — must pass `new Function(code)` check)
 - CSS custom properties, flexbox, CSS animations
-- SVG for circular timer arc (`stroke-dasharray` animation)
+- SVG for circular timer arc (`stroke-dasharray`)
 - Web Audio API
 - Canvas 2D for particles
 - localStorage for save/load (`coffeeConveyor` key) — auto-saves every 5 seconds
+- Save migration handles old boolean upgrade values and all prior key formats
 - http-server for local dev
 
 ## Key Functions
 - `getRating()` → returns `totalStars / maxStars` (0-1)
 - `generateOrder(rating)` → creates scaled order object with time, ingredients, bonus, decor time
-- `randOrder(rating)` → picks eligible template (weighted by ingredient count), filters by minRating and ingredient minRating
+- `randOrder(rating)` → picks eligible template (weighted by ingredient count)
 - `getStarThresholds(rating)` → `{five, four, three, two}` thresholds
-- `applyAutoFill(a)` → auto-fills 1 missing ingredient (Part-time Barista)
+- `getNextLevelXP(level)` → XP required for next level
+- `showLevelUpChoices()` → pauses game and shows 3 upgrade cards
+- `pickUpgradeChoice(id)` → applies upgrade, resumes, chains if overflow
+- `renderLevelBar()` → updates level display, XP bar, effects panel, owned upgrades
+- `renderActiveEffects()` → grouped text summary of all active upgrade effects
+- `renderOwnedUpgrades()` → renders owned upgrade grid
+- `renderIngredientButtons()` → rebuilds button bar based on current rating
 - `showFloatingStars(stars, text, cupEl)` → animates star indicator at cup
 - `showFloatingMoney(amount, cupEl)` → animates `+$X` base cost upward-right
 - `showFloatingTip(amount, cupEl)` → animates `tipped $X !!` upward-left (orange)
-- `makeRemover(el)` → returns cleanup fn for setTimeout
-- `renderIngredientButtons()` → rebuilds button bar based on current rating
-- `regenerateLockedOrders(locked)` → replaces orders referencing locked ingredients
 - `updateTimerArc(a)` → updates circular SVG arc position and color
-- `renderUpgrades()` → renders category-based upgrade shop
 - `pushHint(msg)` → adds message to hint log
 - `buildCoffeeShopBackground()` → builds all furniture, applies wall color and diamond pattern
-
-## Cup Designs
-- d-0: White ceramic, d-1: Red mug, d-2: Blue dots, d-3: Green matte, d-4: Yellow stripe
-- d-5: Dark ceramic, d-6: Terracotta, d-7: Pink diamond, d-8: Turquoise wave, d-9: Purple speckle

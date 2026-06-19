@@ -151,6 +151,8 @@ const CUP_OFFSCREEN_X = 500;
 
 let cups = [];
 let money = 0;
+let level = 0;
+let nextLevelXP = 20;
 let served = 0;
 let missed = 0;
 let missStreak = 0;
@@ -159,6 +161,7 @@ let maxStars = 50;
 let activeIdx = 0;
 let busy = false;
 let paused = false;
+let wasPausedBeforeLevelUp = false;
 
 const row = document.getElementById('cupsRow');
 function pushHint(msg) {
@@ -222,7 +225,7 @@ function generateOrder(rating) {
   for (const [id, count] of Object.entries(template.ings)) {
     ings[id] = count;
   }
-  var bonusCap = 3 + (state.upgrades['counter'] ? 1 : 0);
+  var bonusCap = 3;
   const bonus = Math.floor(efficiency * bonusCap);
   for (let i = 0; i < bonus; i++) {
     const keys = Object.keys(ings);
@@ -230,28 +233,12 @@ function generateOrder(rating) {
     ings[pick] = (ings[pick] || 0) + 1;
   }
   var decorTime = 0;
-  if (state.upgrades['plant']) decorTime += 2;
-  if (state.upgrades['window']) decorTime += 3;
-  if (state.upgrades['lighting']) decorTime += 2;
-  if (state.upgrades['music']) decorTime += 4;
-  if (state.upgrades['layout']) decorTime *= 2;
+  decorTime += (state.upgrades['plant'] || 0) * 1;
+  decorTime += (state.upgrades['window'] || 0) * 1;
+  decorTime += (state.upgrades['lighting'] || 0) * 1;
+  decorTime += (state.upgrades['music'] || 0) * 1;
+  decorTime *= 1 + (state.upgrades['layout'] || 0) * 0.5;
   return { name: template.name, ings: ings, time: time + decorTime };
-}
-
-function applyAutoFill(a) {
-  if (!a || a.full) return;
-  if (!state.upgrades['barista']) return;
-  var missing = [];
-  for (var _i = 0; _i < INGREDIENTS.length; _i++) {
-    var ing = INGREDIENTS[_i];
-    var need = a.order.ings[ing.id] || 0;
-    if (need > 0 && (a.added[ing.id] || 0) < need) missing.push(ing.id);
-  }
-  if (missing.length === 0) return;
-  var pick = missing[Math.floor(Math.random() * missing.length)];
-  a.added[pick] = Math.min((a.added[pick] || 0) + 1, a.order.ings[pick] || 0);
-  updateCupFill(a);
-  updateOrderUI();
 }
 
 function getStarThresholds(rating) {
@@ -261,6 +248,10 @@ function getStarThresholds(rating) {
     three: Math.min(0.62, 0.38 + rating * 0.24),
     two: Math.min(0.40, 0.18 + rating * 0.22),
   };
+}
+
+function getNextLevelXP(level) {
+  return 20 + level * 15 + Math.floor(level * level * 0.5);
 }
 
 function cupPos(index) {
@@ -367,12 +358,14 @@ function updateTimerArc(a) {
 }
 
 function updateOrderUI() {
+  var _ouStart = performance.now();
   const a = cups[activeIdx];
   if (!a) {
     orderName.textContent = '\u2014';
     timerArc.setAttribute('stroke-dashoffset', '0');
     timerText.textContent = '\u2014';
     orderChecklist.innerHTML = '';
+    profiler.orderUiMs += performance.now() - _ouStart;
     return;
   }
 
@@ -401,6 +394,7 @@ function updateOrderUI() {
       '<span>' + have + '/' + need + '</span>';
     orderChecklist.appendChild(item);
   }
+  profiler.orderUiMs += performance.now() - _ouStart;
 }
 
 function updateRating() {
@@ -438,7 +432,7 @@ function addIngredient(ingId) {
       p.style.setProperty('--dx', (Math.random() * 50 - 25) + 'px');
       p.style.setProperty('--dy', (Math.random() * -30 - 10) + 'px');
       document.body.appendChild(p);
-      setTimeout(function (pp) { pp.remove(); }, 500);
+      setTimeout(function () { p.remove(); }, 500);
     }
     playError();
     pushHint('\u274C Wrong! Try again...');
@@ -464,8 +458,7 @@ function addIngredient(ingId) {
   }
 
   var power = 1;
-  if (state.upgrades['milkfrother'] && (ingId === 'milk' || ingId === 'cream')) power += 1;
-  if (state.upgrades['syrups'] && (ingId === 'syrup' || ingId === 'cinnamon' || ingId === 'vanilla' || ingId === 'honey')) power += 1;
+  power += (state.upgrades[ingId + '_tap'] || 0);
   power = Math.min(power, need - (a.added[ingId] || 0));
   a.added[ingId] = (a.added[ingId] || 0) + power;
   playPop();
@@ -493,7 +486,7 @@ function addIngredient(ingId) {
     p.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
     p.style.setProperty('--dy', (Math.random() * -60 - 10) + 'px');
     document.body.appendChild(p);
-    setTimeout(function (pp) { pp.remove(); }, 500);
+    setTimeout(function () { p.remove(); }, 500);
   }
 
   // Update fill %
@@ -507,7 +500,7 @@ function addIngredient(ingId) {
     servedDisplay.textContent = served;
     const ratio = a.totalTime > 0 ? a.timer / a.totalTime : 0;
     const thresholds = getStarThresholds(getRating());
-    var invOffset = state.upgrades['inventory'] ? 0.06 : 0;
+    var invOffset = (state.upgrades['inventory'] || 0) * 0.06;
     var effectiveFive = thresholds.five - invOffset;
     var effectiveFour = thresholds.four - invOffset;
     var effectiveThree = thresholds.three - invOffset;
@@ -530,14 +523,27 @@ function addIngredient(ingId) {
     }
     var starMoney = [0, 0.5, 0.8, 1.1, 1.4, 1.8];
     var moneyEarned = Math.floor(totalIngs * (baseTime / 8) * starMoney[stars]);
-    if (state.upgrades['wallart']) moneyEarned = Math.floor(moneyEarned * 1.15);
-    if (state.upgrades['outdoor']) moneyEarned = Math.floor(moneyEarned * 1.20);
-    if (state.upgrades['beans']) moneyEarned = Math.floor(moneyEarned * 1.5);
-    if (state.upgrades['lighting']) moneyEarned = Math.floor(moneyEarned * (1 + 0.1 * stars));
+    var moneyMultiplier = 1;
+    var wallartLevel = state.upgrades['wallart'] || 0;
+    if (wallartLevel) moneyMultiplier += wallartLevel * 0.10;
+    var outdoorLevel = state.upgrades['outdoor'] || 0;
+    if (outdoorLevel) moneyMultiplier += outdoorLevel * 0.10;
+    var beansLevel = state.upgrades['beans'] || 0;
+    if (beansLevel) moneyMultiplier += beansLevel * 0.15;
+    var lightingLevel = state.upgrades['lighting'] || 0;
+    if (lightingLevel) moneyMultiplier += lightingLevel * 0.05 * stars;
+    moneyEarned = Math.floor(moneyEarned * moneyMultiplier);
     money += moneyEarned;
     document.getElementById('moneyDisplay').textContent = '$' + money;
-    document.getElementById('shopMoneyDisplay').textContent = '$' + money;
-    renderUpgrades();
+    updateLevelBar();
+
+    // Level up check
+    if (money >= nextLevelXP) {
+      money -= nextLevelXP;
+      level++;
+      nextLevelXP = getNextLevelXP(level);
+      showLevelUpChoices();
+    }
 
     var baseCost = Math.floor(totalIngs * (baseTime / 8));
     var tip = moneyEarned - baseCost;
@@ -563,7 +569,7 @@ function addIngredient(ingId) {
       p.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
       p.style.setProperty('--dy', (Math.random() * -50 - 20) + 'px');
       document.body.appendChild(p);
-      setTimeout(function (pp) { pp.remove(); }, 500);
+      setTimeout(function () { p.remove(); }, 500);
     }
 
     if (state.upgrades['supervisor']) {
@@ -676,8 +682,7 @@ function updateTimer(dt) {
   if (!a || a.full) return;
   if (a.timer <= 0) return;
 
-  var slowdown = state.upgrades['brewer'] ? 0.75 : 1;
-  a.timer -= dt * Math.max(0.1, slowdown);
+  a.timer -= dt;
   updateOrderUI();
 
   if (a.timer <= 0) {
@@ -687,7 +692,7 @@ function updateTimer(dt) {
     missStreak++;
     document.getElementById('missedDisplay').textContent = missed;
     totalStars += 0;
-    var missPenalty = Math.round(maxStars * 0.25) + Math.max(0, Math.round(missStreak * maxStars * 0.1) - (state.upgrades['cashier'] ? Math.round(maxStars * 0.1) : 0));
+    var missPenalty = Math.round(maxStars * 0.25) + Math.round(missStreak * maxStars * 0.1);
     maxStars += missPenalty;
     updateRating();
     updateOrderUI();
@@ -705,7 +710,7 @@ function updateTimer(dt) {
       p.style.setProperty('--dx', (Math.random() * 40 - 20) + 'px');
       p.style.setProperty('--dy', (Math.random() * -20 - 10) + 'px');
       document.body.appendChild(p);
-      setTimeout(function (pp) { pp.remove(); }, 500);
+      setTimeout(function () { p.remove(); }, 500);
     }
 
     setTimeout(advance, 600);
@@ -747,7 +752,6 @@ function advance() {
       cups[activeIdx].el.classList.remove('entering');
       busy = false;
       updateOrderUI();
-      applyAutoFill(cups[activeIdx]);
       pushHint('\u2615 New Order: ' + cups[activeIdx].order.name + '!');
     }, 500);
   }, 400);
@@ -761,49 +765,85 @@ const state = {
   upgrades: {},
 };
 
-const UPGRADE_CATEGORIES = [
+var MAX_UPGRADE_LEVEL = 3;
+
+var UPGRADE_CATEGORIES = [
   {
     name: '\uD83C\uDFF0 Decor',
     upgrades: [
-      { id: 'plant', name: 'Potted Plant', desc: '+2s per order', icon: '\uD83C\uDF3F', cost: 20 },
-      { id: 'wallart', name: 'Wall Art', desc: '+15% money per order', icon: '\uD83D\uDDBC\uFE0F', cost: 40 },
-      { id: 'counter', name: 'New Counter', desc: '+1 bonus ingredient capacity', icon: '\uD83E\uDE9A', cost: 80 },
-      { id: 'window', name: 'Window Display', desc: '+3s per order', icon: '\uD83C\uDFE1', cost: 150 },
-      { id: 'lighting', name: 'Ambient Lighting', desc: '+2s, star money bonus', icon: '\uD83D\uDCA1', cost: 250 },
-      { id: 'outdoor', name: 'Outdoor Seating', desc: '+20% money per order', icon: '\uD83C\uDFD5\uFE0F', cost: 400 },
-      { id: 'music', name: 'Music System', desc: '+4s per order', icon: '\uD83C\uDFB5', cost: 650 },
-      { id: 'layout', name: 'Premium Layout', desc: '2\u00d7 all decor time bonuses', icon: '\u2728', cost: 1000 },
+      { id: 'plant', names: ['Potted Plant', 'Flowering Plant', 'Exotic Orchid'], icon: '\uD83C\uDF3F' },
+      { id: 'wallart', names: ['Wall Art', 'Gallery Wall', 'Masterpiece'], icon: '\uD83D\uDDBC\uFE0F' },
+      { id: 'window', names: ['Window Display', 'Bay Window', 'Panoramic View'], icon: '\uD83C\uDFE1' },
+      { id: 'lighting', names: ['Ambient Lighting', 'Warm Lighting', 'Designer Lighting'], icon: '\uD83D\uDCA1' },
+      { id: 'outdoor', names: ['Outdoor Seating', 'Patio', 'Rooftop Terrace'], icon: '\uD83C\uDFD5\uFE0F' },
+      { id: 'music', names: ['Music System', 'Sound System', 'Live Band'], icon: '\uD83C\uDFB5' },
+      { id: 'layout', names: ['Premium Layout', 'Executive Layout', 'Grand Layout'], icon: '\u2728' },
     ]
   },
   {
     name: '\uD83D\uDC77 Employees',
     upgrades: [
-      { id: 'barista', name: 'Part-time Barista', desc: 'Auto-fill 1 ingredient per order', icon: '\uD83D\uDC68\u200D\uD83C\uDF73', cost: 1500 },
-      { id: 'cashier', name: 'Cashier', desc: 'Reduce miss streak penalty', icon: '\uD83D\uDCCB', cost: 2500 },
-      { id: 'inventory', name: 'Inventory Manager', desc: 'Loosen star thresholds', icon: '\uD83D\uDCCA', cost: 4000 },
-      { id: 'supervisor', name: 'Shift Supervisor', desc: 'Auto-advance on order complete', icon: '\uD83C\uDFC6', cost: 6500 },
+      { id: 'inventory', names: ['Inventory Manager', 'Inventory Analyst', 'Inventory Director'], icon: '\uD83D\uDCCA' },
+      { id: 'supervisor', names: ['Shift Supervisor', 'Store Manager', 'Regional Manager'], icon: '\uD83C\uDFC6' },
     ]
   },
   {
     name: '\u2699\uFE0F Equipment',
     upgrades: [
-      { id: 'beans', name: 'Premium Beans', desc: '1.5\u00d7 money per order', icon: '\uD83C\uDF4E', cost: 10000 },
-      { id: 'milkfrother', name: 'Milk Frother', desc: '+1 tap for milk & cream', icon: '\uD83E\uDD5B', cost: 16000 },
-      { id: 'syrups', name: 'Syrup Dispenser', desc: '+1 tap for syrup/spices', icon: '\uD83C\uDF41', cost: 25000 },
-      { id: 'brewer', name: 'Master Brewer', desc: 'Timer 25% slower', icon: '\uD83C\uDFAF', cost: 40000 },
+      { id: 'beans', names: ['Premium Beans', 'Single-Origin', 'Reserve Blend'], icon: '\uD83C\uDF4E' },
+      { id: 'sugar_tap', names: ['Sugar Shot', 'Sugar Stream', 'Sugar Flood'], icon: '\uD83C\uDF7C' },
+      { id: 'milk_tap', names: ['Milk Splash', 'Milk Pour', 'Milk Cascade'], icon: '\uD83E\uDD5B' },
+      { id: 'cream_tap', names: ['Cream Dollop', 'Cream Swirl', 'Cream Wave'], icon: '\uD83C\uDF66' },
+      { id: 'choco_tap', names: ['Choco Dust', 'Choco Drizzle', 'Choco Deluge'], icon: '\uD83C\uDF6B' },
+      { id: 'syrup_tap', names: ['Syrup Drop', 'Syrup Stream', 'Syrup River'], icon: '\uD83C\uDF41' },
+      { id: 'cinnamon_tap', names: ['Cinnamon Dust', 'Cinnamon Swirl', 'Cinnamon Storm'], icon: '\uD83C\uDF3F' },
+      { id: 'vanilla_tap', names: ['Vanilla Drop', 'Vanilla Pour', 'Vanilla Flood'], icon: '\uD83C\uDF3C' },
+      { id: 'honey_tap', names: ['Honey Drip', 'Honey Flow', 'Honey Cascade'], icon: '\uD83C\uDF6F' },
     ]
   }
 ];
+
+function getUpgradeDesc(id, level) {
+  var lvl = (level || 0) + 1;
+  switch (id) {
+    case 'plant': return '+' + (lvl * 1) + 's per order';
+    case 'wallart': return '+' + (lvl * 10) + '% money';
+    case 'window': return '+' + (lvl * 1) + 's per order';
+    case 'lighting': return '+' + (lvl * 1) + 's, more $ from stars';
+    case 'outdoor': return '+' + (lvl * 10) + '% money';
+    case 'music': return '+' + (lvl * 1) + 's per order';
+    case 'layout': return '\u00d7' + (1 + lvl * 0.5).toFixed(1) + ' decor time';
+    case 'inventory': return 'Easier ' + (lvl * 6) + '% star ratings';
+    case 'supervisor': return 'Skip delay between orders';
+    case 'beans': return '+' + (lvl * 15) + '% money';
+    case 'sugar_tap': return '+' + lvl + ' sugar per click';
+    case 'milk_tap': return '+' + lvl + ' milk per click';
+    case 'cream_tap': return '+' + lvl + ' cream per click';
+    case 'choco_tap': return '+' + lvl + ' choco per click';
+    case 'syrup_tap': return '+' + lvl + ' syrup per click';
+    case 'cinnamon_tap': return '+' + lvl + ' cinnamon per click';
+    case 'vanilla_tap': return '+' + lvl + ' vanilla per click';
+    case 'honey_tap': return '+' + lvl + ' honey per click';
+    default: return '';
+  }
+}
 
 /* ============================
    DOM REFS
    ============================ */
 
-const upgradesEl = document.getElementById('upgrades');
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 const soundBtn = document.getElementById('soundBtn');
 const resetBtn = document.getElementById('resetBtn');
+const levelDisplay = document.getElementById('levelDisplay');
+const levelXpFill = document.getElementById('levelXpFill');
+const levelXpText = document.getElementById('levelXpText');
+const levelXpNext = document.getElementById('levelXpNext');
+const levelUpModal = document.getElementById('levelUpModal');
+const modalChoices = document.getElementById('modalChoices');
+const ownedGrid = document.getElementById('ownedGrid');
+const ownedCount = document.getElementById('ownedCount');
 
 /* ============================
    PARTICLES
@@ -934,58 +974,196 @@ function updateUI() {
   renderIngredientButtons();
 }
 
-function renderUpgrades() {
-  upgradesEl.innerHTML = '';
+function updateLevelBar() {
+  levelDisplay.textContent = level;
+  levelXpText.textContent = money;
+  levelXpNext.textContent = nextLevelXP;
+  var pct = Math.min(100, Math.floor(money / nextLevelXP * 100));
+  levelXpFill.style.width = pct + '%';
+  renderActiveEffects();
+  renderOwnedUpgrades();
+}
+
+function renderActiveEffects() {
+  var el = document.getElementById('activeEffects');
+  if (!el) return;
+  var lines = [];
+
+  // Time bonus
+  var pl = state.upgrades['plant'] || 0;
+  var wl = state.upgrades['window'] || 0;
+  var ll = state.upgrades['lighting'] || 0;
+  var ml = state.upgrades['music'] || 0;
+  var timeBonus = (pl + wl + ll + ml) * 1;
+  if (timeBonus > 0) {
+    var lvl = state.upgrades['layout'] || 0;
+    var total = timeBonus * (1 + lvl * 0.5);
+    var txt = '+' + total + 's per order';
+    if (lvl > 0) txt += ' (\u00d7' + (1 + lvl * 0.5).toFixed(1) + ' layout)';
+    lines.push(txt);
+  }
+
+  // Money bonus
+  var wal = state.upgrades['wallart'] || 0;
+  var ol = state.upgrades['outdoor'] || 0;
+  var bl = state.upgrades['beans'] || 0;
+  var moneyPct = wal * 10 + ol * 10 + bl * 15;
+  if (moneyPct > 0) {
+    lines.push('+' + moneyPct + '% money');
+  }
+
+  // Star money
+  var litLvl = state.upgrades['lighting'] || 0;
+  if (litLvl > 0) {
+    lines.push('+ up to ' + (litLvl * 5 * 5) + '% $ from stars');
+  }
+
+  // Tap upgrades
+  var tapParts = [];
+  if (state.upgrades['sugar_tap']) tapParts.push('+' + state.upgrades['sugar_tap'] + ' sugar');
+  if (state.upgrades['milk_tap']) tapParts.push('+' + state.upgrades['milk_tap'] + ' milk');
+  if (state.upgrades['cream_tap']) tapParts.push('+' + state.upgrades['cream_tap'] + ' cream');
+  if (state.upgrades['choco_tap']) tapParts.push('+' + state.upgrades['choco_tap'] + ' choco');
+  if (state.upgrades['syrup_tap']) tapParts.push('+' + state.upgrades['syrup_tap'] + ' syrup');
+  if (state.upgrades['cinnamon_tap']) tapParts.push('+' + state.upgrades['cinnamon_tap'] + ' cinnamon');
+  if (state.upgrades['vanilla_tap']) tapParts.push('+' + state.upgrades['vanilla_tap'] + ' vanilla');
+  if (state.upgrades['honey_tap']) tapParts.push('+' + state.upgrades['honey_tap'] + ' honey');
+  if (tapParts.length > 0) {
+    lines.push('Tap: ' + tapParts.join(', '));
+  }
+
+  // Thresholds
+  var invLvl = state.upgrades['inventory'] || 0;
+  if (invLvl > 0) {
+    lines.push('Easier ' + (invLvl * 6) + '% star ratings');
+  }
+
+  // Supervisor
+  if (state.upgrades['supervisor'] > 0) {
+    lines.push('Skip delay between orders');
+  }
+
+  el.innerHTML = lines.length > 0
+    ? lines.map(function (l) { return '<div class="effect-line">' + l + '</div>'; }).join('')
+    : '<div class="effect-empty">No upgrades yet</div>';
+}
+
+function renderOwnedUpgrades() {
+  var items = [];
+  var total = 0;
   for (var c = 0; c < UPGRADE_CATEGORIES.length; c++) {
     var cat = UPGRADE_CATEGORIES[c];
-    var heading = document.createElement('div');
-    heading.className = 'upgrade-category-heading';
-    heading.textContent = cat.name;
-    upgradesEl.appendChild(heading);
-
     for (var i = 0; i < cat.upgrades.length; i++) {
       var upg = cat.upgrades[i];
-      var owned = !!state.upgrades[upg.id];
-      var canAfford = money >= upg.cost;
-      var card = document.createElement('div');
-      card.className = 'upgrade-card';
-      if (owned) {
-        card.classList.add('owned');
-      } else if (canAfford) {
-        card.classList.add('affordable');
-        card.addEventListener('click', function (id, cost) { return function () { buyUpgrade(id, cost); }; }(upg.id, upg.cost));
-      } else {
-        card.classList.add('locked');
+      var lvl = state.upgrades[upg.id] || 0;
+      if (lvl > 0) {
+        total++;
+        var name = upg.names[lvl - 1];
+        var roman = lvl === 1 ? 'I' : lvl === 2 ? 'II' : 'III';
+        var desc = getUpgradeDesc(upg.id, lvl - 1);
+        items.push(
+          '<div class="owned-item">' +
+          '<div class="owned-item-top">' +
+          '<span class="owned-item-icon">' + upg.icon + '</span>' +
+          '<span class="owned-item-name">' + name + '</span>' +
+          '<span class="owned-item-level">' + roman + '</span>' +
+          '</div>' +
+          '<div class="owned-item-desc">' + desc + '</div>' +
+          '</div>'
+        );
       }
-      var costStr = owned ? '\u2713' : '$' + Math.floor(upg.cost);
-      card.innerHTML =
-        '<span class="upgrade-icon">' + upg.icon + '</span>' +
-        '<div class="upgrade-info">' +
-          '<div class="upgrade-name">' + upg.name + '</div>' +
-          '<div class="upgrade-desc">' + upg.desc + '</div>' +
-        '</div>' +
-        '<div class="upgrade-cost">' + costStr + '</div>';
-      upgradesEl.appendChild(card);
     }
+  }
+  ownedGrid.innerHTML = items.join('');
+  ownedCount.textContent = total;
+}
+
+function getEligibleUpgrades() {
+  var eligible = [];
+  for (var c = 0; c < UPGRADE_CATEGORIES.length; c++) {
+    var cat = UPGRADE_CATEGORIES[c];
+    for (var i = 0; i < cat.upgrades.length; i++) {
+      var upg = cat.upgrades[i];
+      var currentLevel = state.upgrades[upg.id] || 0;
+      if (currentLevel < MAX_UPGRADE_LEVEL) {
+        eligible.push(upg);
+      }
+    }
+  }
+  return eligible;
+}
+
+function showLevelUpChoices() {
+  initAudio();
+  wasPausedBeforeLevelUp = paused;
+  paused = true;
+
+  var eligible = getEligibleUpgrades();
+  if (eligible.length === 0) {
+    pushHint('\uD83D\uDC51 All upgrades maxed!');
+    paused = wasPausedBeforeLevelUp;
+    return;
+  }
+
+  // Pick 3 random distinct upgrades
+  var choices = [];
+  var pool = eligible.slice();
+  for (var i = 0; i < 3 && pool.length > 0; i++) {
+    var idx = Math.floor(Math.random() * pool.length);
+    choices.push(pool[idx]);
+    pool.splice(idx, 1);
+  }
+
+  modalChoices.innerHTML = '';
+  for (var ci = 0; ci < choices.length; ci++) {
+    var upg = choices[ci];
+    var currentLevel = state.upgrades[upg.id] || 0;
+    var nextName = upg.names[currentLevel];
+    var nextDesc = getUpgradeDesc(upg.id, currentLevel);
+    var card = document.createElement('div');
+    card.className = 'choice-card';
+    card.innerHTML =
+      '<span class="choice-icon">' + upg.icon + '</span>' +
+      '<div class="choice-info">' +
+        '<div class="choice-name">' + nextName + '</div>' +
+        '<div class="choice-desc">' + nextDesc + '</div>' +
+      '</div>';
+    card.addEventListener('click', function (id) { return function () { pickUpgradeChoice(id); }; }(upg.id));
+    modalChoices.appendChild(card);
+  }
+
+  levelUpModal.classList.remove('hidden');
+  playDing();
+}
+
+function pickUpgradeChoice(id) {
+  state.upgrades[id] = (state.upgrades[id] || 0) + 1;
+  levelUpModal.classList.add('hidden');
+  paused = wasPausedBeforeLevelUp;
+  updateLevelBar();
+
+  pushHint('\u2B50 Upgraded ' + getUpgradeName(id, state.upgrades[id] - 1) + '!');
+  playComplete();
+
+  // Check for another level up
+  if (money >= nextLevelXP) {
+    money -= nextLevelXP;
+    level++;
+    nextLevelXP = getNextLevelXP(level);
+    showLevelUpChoices();
   }
 }
 
-function buyUpgrade(id, cost) {
-  initAudio();
-  if (money < cost || state.upgrades[id]) {
-    playError();
-    return;
+function getUpgradeName(id, levelIndex) {
+  for (var c = 0; c < UPGRADE_CATEGORIES.length; c++) {
+    var cat = UPGRADE_CATEGORIES[c];
+    for (var i = 0; i < cat.upgrades.length; i++) {
+      if (cat.upgrades[i].id === id) {
+        return cat.upgrades[i].names[levelIndex] || id;
+      }
+    }
   }
-  money -= cost;
-  state.upgrades[id] = true;
-  document.getElementById('moneyDisplay').textContent = '$' + money;
-  document.getElementById('shopMoneyDisplay').textContent = '$' + money;
-  playDing();
-  var shop = document.getElementById('shop');
-  shop.classList.add('flash');
-  setTimeout(function () { shop.classList.remove('flash'); }, 400);
-  renderUpgrades();
-  updateUI();
+  return id;
 }
 
 /* ============================
@@ -997,6 +1175,8 @@ function saveGame() {
     served: served,
     missed: missed,
     money: money,
+    level: level,
+    nextLevelXP: nextLevelXP,
     totalStars: totalStars,
     maxStars: maxStars,
     upgrades: state.upgrades,
@@ -1012,9 +1192,57 @@ function loadGame() {
       served = data.served || 0;
       missed = data.missed || 0;
       money = data.money || 0;
+      level = data.level || 0;
+      nextLevelXP = data.nextLevelXP || getNextLevelXP(level);
       totalStars = data.totalStars !== undefined ? data.totalStars : 5;
       maxStars = data.maxStars !== undefined ? data.maxStars : 50;
       state.upgrades = data.upgrades || {};
+      // Normalize old boolean upgrades to numbers
+      for (var _uk in state.upgrades) {
+        if (state.upgrades[_uk] === true) state.upgrades[_uk] = 1;
+      }
+      // Migrate old upgrade keys
+      if (state.upgrades['counter']) { delete state.upgrades['counter']; }
+      if (state.upgrades['cashier']) { delete state.upgrades['cashier']; }
+      if (state.upgrades['barista']) { delete state.upgrades['barista']; }
+      if (state.upgrades['brewer']) { delete state.upgrades['brewer']; }
+      if (state.upgrades['milkfrother']) {
+        state.upgrades['milk_tap'] = state.upgrades['milkfrother'];
+        state.upgrades['cream_tap'] = state.upgrades['milkfrother'];
+        delete state.upgrades['milkfrother'];
+      }
+      if (state.upgrades['syrups']) {
+        var _sl = state.upgrades['syrups'];
+        state.upgrades['syrup_tap'] = _sl;
+        state.upgrades['cinnamon_tap'] = _sl;
+        state.upgrades['vanilla_tap'] = _sl;
+        state.upgrades['honey_tap'] = _sl;
+        delete state.upgrades['syrups'];
+      }
+      if (state.upgrades['sweeteners']) {
+        var _sw = state.upgrades['sweeteners'];
+        state.upgrades['sugar_tap'] = _sw;
+        state.upgrades['honey_tap'] = _sw;
+        delete state.upgrades['sweeteners'];
+      }
+      if (state.upgrades['dairy']) {
+        var _da = state.upgrades['dairy'];
+        state.upgrades['milk_tap'] = _da;
+        state.upgrades['cream_tap'] = _da;
+        delete state.upgrades['dairy'];
+      }
+      if (state.upgrades['spices']) {
+        var _sp = state.upgrades['spices'];
+        state.upgrades['cinnamon_tap'] = _sp;
+        state.upgrades['vanilla_tap'] = _sp;
+        delete state.upgrades['spices'];
+      }
+      if (state.upgrades['flavors']) {
+        var _fl = state.upgrades['flavors'];
+        state.upgrades['choco_tap'] = _fl;
+        state.upgrades['syrup_tap'] = _fl;
+        delete state.upgrades['flavors'];
+      }
     } catch (e) {}
   }
   const soundSetting = localStorage.getItem('coffeeSound');
@@ -1032,16 +1260,17 @@ function resetGame() {
     missed = 0;
     missStreak = 0;
     money = 0;
+    level = 0;
+    nextLevelXP = 20;
     totalStars = 5;
     maxStars = 50;
     state.upgrades = {};
     initCups();
-    renderUpgrades();
+    updateLevelBar();
     updateUI();
     servedDisplay.textContent = '0';
     document.getElementById('missedDisplay').textContent = '0';
     document.getElementById('moneyDisplay').textContent = '$0';
-    document.getElementById('shopMoneyDisplay').textContent = '$0';
     updateRating();
     orderName.textContent = '\u2014';
     timerText.textContent = '\u2014';
@@ -1051,6 +1280,7 @@ function resetGame() {
 }
 
 function togglePause() {
+  if (levelUpModal && !levelUpModal.classList.contains('hidden')) return;
   paused = !paused;
   const btn = document.getElementById('pauseBtn');
   btn.textContent = paused ? '\u25B6' : '\u23F8';
@@ -1058,17 +1288,81 @@ function togglePause() {
 }
 
 /* ============================
+   PROFILER
+   ============================ */
+
+var profiler = {
+  frameCount: 0,
+  totalFrameMs: 0,
+  maxFrameMs: 0,
+  minFrameMs: 999,
+  timerMs: 0,
+  orderUiMs: 0,
+  lastLog: 0,
+  logInterval: 3000,
+  displayEl: null,
+  init: function () {
+    var el = document.createElement('div');
+    el.id = 'profilerDisplay';
+    el.style.cssText = 'position:fixed;top:4px;left:4px;z-index:999;font-size:10px;font-family:monospace;color:#888;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:4px;pointer-events:none;line-height:1.5;';
+    el.textContent = 'profiling...';
+    document.body.appendChild(el);
+    this.displayEl = el;
+    this.lastLog = performance.now();
+  },
+  frame: function (frameMs) {
+    this.frameCount++;
+    this.totalFrameMs += frameMs;
+    if (frameMs > this.maxFrameMs) this.maxFrameMs = frameMs;
+    if (frameMs < this.minFrameMs) this.minFrameMs = frameMs;
+    var now = performance.now();
+    if (now - this.lastLog > this.logInterval) {
+      this.log(now);
+    }
+  },
+  log: function (now) {
+    if (!this.displayEl) return;
+    var avg = this.frameCount > 0 ? (this.totalFrameMs / this.frameCount).toFixed(1) : '0.0';
+    var fps = this.frameCount > 0 ? (1000 / (this.totalFrameMs / this.frameCount)).toFixed(0) : '0';
+    var min = this.minFrameMs === 999 ? '0.0' : this.minFrameMs.toFixed(1);
+    var max = this.maxFrameMs.toFixed(1);
+    var timerAvg = this.frameCount > 0 ? (this.timerMs / this.frameCount).toFixed(2) : '0.00';
+    var orderAvg = this.frameCount > 0 ? (this.orderUiMs / this.frameCount).toFixed(3) : '0.000';
+    this.displayEl.innerHTML =
+      'FPS: ' + fps + ' (min:' + min + ' avg:' + avg + ' max:' + max + 'ms)' +
+      '<br>timer: ' + timerAvg + 'ms  orderUI: ' + orderAvg + 'ms  frames: ' + this.frameCount;
+    this.frameCount = 0;
+    this.totalFrameMs = 0;
+    this.maxFrameMs = 0;
+    this.minFrameMs = 999;
+    this.timerMs = 0;
+    this.orderUiMs = 0;
+    this.lastLog = now;
+  }
+};
+
+/* ============================
    ANIMATION LOOP
    ============================ */
 
 let lastTime = 0;
+var firstFrame = true;
 
 function animate(time) {
   const dt = Math.min((time - lastTime) / 1000, 0.05);
+
+  if (firstFrame) {
+    firstFrame = false;
+  } else {
+    profiler.frame(time - lastTime);
+  }
+
   lastTime = time;
 
   if (!paused) {
+    var t0 = performance.now();
     updateTimer(dt);
+    profiler.timerMs += performance.now() - t0;
   }
   updateParticles(dt);
   renderParticles();
@@ -1225,17 +1519,17 @@ function buildCoffeeShopBackground() {
    ============================ */
 
 function init() {
+  profiler.init();
   loadGame();
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   buildCoffeeShopBackground();
   initCups();
-  renderUpgrades();
+  updateLevelBar();
   updateUI();
   servedDisplay.textContent = served;
   document.getElementById('missedDisplay').textContent = missed;
   document.getElementById('moneyDisplay').textContent = '$' + money;
-  document.getElementById('shopMoneyDisplay').textContent = '$' + money;
   updateRating();
   pushHint('\u2615 Coffee Conveyor \u2014 Complete orders to earn stars!');
   document.getElementById('pauseBtn').addEventListener('click', togglePause);
@@ -1247,6 +1541,15 @@ function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
+document.addEventListener('keydown', function (e) {
+  var key = parseInt(e.key, 10);
+  if (key >= 1 && key <= 9) {
+    var btns = document.querySelectorAll('#ingredientBar .ing-btn');
+    var btn = btns[key - 1];
+    if (btn) { e.preventDefault(); addIngredient(btn.dataset.ing); }
+  }
+});
+
 /* ============================
    INGREDIENT BUTTONS
    ============================ */
@@ -1255,5 +1558,3 @@ document.getElementById('ingredientBar').addEventListener('click', function (e) 
   var btn = e.target.closest('.ing-btn');
   if (btn) addIngredient(btn.dataset.ing);
 });
-
-

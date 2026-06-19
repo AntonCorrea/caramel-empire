@@ -84,14 +84,33 @@
       <div id="ingredientBar"></div>
     </div>
 
-    <section id="shop">
-      <div class="shop-header">
-        <h2>🧰 Upgrades</h2>
-        <span class="shop-money"><span id="shopMoneyDisplay">0</span></span>
+    <section id="levelPanel">
+      <div class="level-header">
+        <h2>Level <span id="levelDisplay">0</span> 👑</h2>
         <button id="resetBtn" class="reset-btn" title="Reset progress">🗑️</button>
       </div>
-      <div id="upgrades"></div>
+      <div class="level-xp-bar">
+        <div class="level-xp-fill" id="levelXpFill"></div>
+      </div>
+      <div class="level-xp-text">💰 $<span id="levelXpText">0</span> / $<span id="levelXpNext">20</span></div>
     </section>
+
+    <section id="ownedUpgrades">
+      <div class="owned-header">
+        <span class="owned-title">Active Upgrades</span>
+        <span class="owned-count" id="ownedCount">0</span>
+      </div>
+      <div class="active-effects" id="activeEffects"></div>
+      <div class="owned-grid" id="ownedGrid"></div>
+    </section>
+  </div>
+
+  <div id="levelUpModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2>⬆️ LEVEL UP!</h2>
+      <p class="modal-subtitle">Choose an upgrade</p>
+      <div class="modal-choices" id="modalChoices"></div>
+    </div>
   </div>
 
   <canvas id="particleCanvas"></canvas>
